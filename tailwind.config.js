@@ -14,6 +14,14 @@ export default {
             fontFamily: {
                 sans: ['Figtree', ...defaultTheme.fontFamily.sans],
             },
+            spacing: {
+                '15': '60px',  // For collapsed sidebar
+                '64': '250px', // For expanded sidebar
+            },
+            margin: {
+                '15': '60px',
+                '64': '250px',
+            },
         },
     },
 
