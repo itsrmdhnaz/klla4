@@ -23,73 +23,7 @@
                 </a>
             </div>
 
-            <!-- Menu Header: Master Data -->
-            <div class="sidebar-header mt-6 mb-2">
-                <h3 class="sidebar-text text-gray-400 text-xs uppercase tracking-wider font-semibold px-4 py-2">Master Data</h3>
-                <div class="sidebar-collapsed-only mx-4 border-t border-gray-600"></div>
-            </div>
-
-            <!-- Master Data (Submenu) -->
-            <div class="sidebar-item px-3">
-                <button
-                    class="sidebar-toggle w-full flex items-center h-12 px-4 rounded-lg hover:bg-gray-700 transition-all duration-200 text-left group"
-                    data-target="masterdata">
-                    <i class="fas fa-database text-lg sidebar-icon text-gray-300 group-hover:text-white transition-colors"></i>
-                    <span class="sidebar-text ml-3 whitespace-nowrap flex-1 font-medium">Master Data</span>
-                    <i class="fas fa-chevron-down sidebar-text text-xs transition-all duration-200 sidebar-arrow text-gray-400 group-hover:text-white"></i>
-                </button>
-                <div class="sidebar-submenu hidden mt-1" id="submenu-masterdata">
-                    <a href="{{ route('admin.master-data.pegawai.index') }}"
-                        class="sidebar-link flex items-center h-10 pl-14 pr-4 mx-2 rounded-lg hover:bg-gray-600 transition-all duration-200 group">
-                        <i class="fas fa-user-tie text-sm mr-3 text-gray-400 group-hover:text-blue-300 transition-colors"></i>
-                        <span class="sidebar-text text-sm text-gray-300 group-hover:text-white">Pegawai</span>
-                    </a>
-                    <a href="{{ route('admin.master-data.cabang.index') }}"
-                        class="sidebar-link flex items-center h-10 pl-14 pr-4 mx-2 rounded-lg hover:bg-gray-600 transition-all duration-200 group">
-                        <i class="fas fa-building text-sm mr-3 text-gray-400 group-hover:text-blue-300 transition-colors"></i>
-                        <span class="sidebar-text text-sm text-gray-300 group-hover:text-white">Cabang</span>
-                    </a>
-                    <a href="{{ route('admin.master-data.spreadsheet.index') }}"
-                        class="sidebar-link flex items-center h-10 pl-14 pr-4 mx-2 rounded-lg hover:bg-gray-600 transition-all duration-200 group">
-                        <i class="fas fa-table text-sm mr-3 text-gray-400 group-hover:text-blue-300 transition-colors"></i>
-                        <span class="sidebar-text text-sm text-gray-300 group-hover:text-white">Spreadsheet</span>
-                    </a>
-                    <a href="{{ route('admin.master-data.spreadsheet-sheet.index') }}"
-                        class="sidebar-link flex items-center h-10 pl-14 pr-4 mx-2 rounded-lg hover:bg-gray-600 transition-all duration-200 group">
-                        <i class="fas fa-file-alt text-sm mr-3 text-gray-400 group-hover:text-blue-300 transition-colors"></i>
-                        <span class="sidebar-text text-sm text-gray-300 group-hover:text-white">Sheet Config</span>
-                    </a>
-                    <a href="{{ route('admin.master-data.spreadsheet-column.index') }}"
-                        class="sidebar-link flex items-center h-10 pl-14 pr-4 mx-2 rounded-lg hover:bg-gray-600 transition-all duration-200 group">
-                        <i class="fas fa-columns text-sm mr-3 text-gray-400 group-hover:text-blue-300 transition-colors"></i>
-                        <span class="sidebar-text text-sm text-gray-300 group-hover:text-white">Column Config</span>
-                    </a>
-                </div>
-            </div>
-
-            <!-- Menu Header: Spreadsheet Management -->
-            <div class="sidebar-header mt-6 mb-2">
-                <h3 class="sidebar-text text-gray-400 text-xs uppercase tracking-wider font-semibold px-4 py-2">Spreadsheet Management</h3>
-                <div class="sidebar-collapsed-only mx-4 border-t border-gray-600"></div>
-            </div>
-
-            <!-- Spreadsheet Management (Submenu) -->
-            <div class="sidebar-item mx-3">
-                <button
-                    class="sidebar-toggle w-full flex items-center h-12 px-4 rounded-lg hover:bg-gray-700 transition-all duration-200 text-left group"
-                    data-target="spreadsheet">
-                    <i class="fas fa-file-excel text-lg sidebar-icon text-gray-300 group-hover:text-white transition-colors"></i>
-                    <span class="sidebar-text ml-3 whitespace-nowrap flex-1 font-medium">Spreadsheet</span>
-                    <i class="fas fa-chevron-down sidebar-text text-xs transition-all duration-200 sidebar-arrow text-gray-400 group-hover:text-white"></i>
-                </button>
-                <div class="sidebar-submenu hidden mt-1" id="submenu-spreadsheet">
-                    <a href="{{ route('admin.spreadsheet.reader') }}"
-                        class="sidebar-link flex items-center h-10 pl-14 pr-4 mx-2 rounded-lg hover:bg-gray-600 transition-all duration-200 group">
-                        <i class="fas fa-eye text-sm mr-3 text-gray-400 group-hover:text-green-300 transition-colors"></i>
-                        <span class="sidebar-text text-sm text-gray-300 group-hover:text-white">Reader</span>
-                    </a>
-                </div>
-            </div>
+            
             {{-- ...existing code... --}}
         </nav>
     </div>
