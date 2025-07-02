@@ -94,7 +94,7 @@
         /* Improved loading state dalam card */
         .chart-container {
             position: relative;
-            min-height: 200px;
+            min-height: 375px;
         }
 
         .chart-container .loading-overlay {
@@ -114,6 +114,67 @@
         .hidden {
             display: none !important;
         }
+
+        /* Error state styling */
+        .error-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(239, 68, 68, 0.1);
+            border: 2px solid #ef4444;
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            backdrop-filter: blur(2px);
+        }
+
+        .error-text {
+            color: #dc2626;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        .retry-button {
+            background: #ef4444;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.2s;
+        }
+
+        .retry-button:hover {
+            background: #dc2626;
+        }
+
+        /* Empty state styling */
+        .empty-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(156, 163, 175, 0.1);
+            border: 2px dashed #9ca3af;
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+
+        .empty-text {
+            color: #6b7280;
+            font-weight: 500;
+            text-align: center;
+        }
     </style>
 
 </head>
@@ -132,7 +193,7 @@
 
         <div class="flex-1">
             <div class="rounded-lg bg-[#9bd69e] p-4">
-                <!-- Chart 1 Container dengan Loading -->
+                <!-- Chart 1 Container dengan Loading dan Error -->
                 <div class="chart-container">
                     <div id="pieChart1"></div>
 
@@ -140,6 +201,26 @@
                     <div id="chart1-loading" class="hidden loading-overlay">
                         <div class="w-12 h-12 mb-3 border-b-2 border-green-600 rounded-full loading-spinner"></div>
                         <span class="text-sm font-medium text-gray-600">Memuat Payment Methods...</span>
+                    </div>
+
+                    <!-- Error overlay untuk chart 1 -->
+                    <div id="chart1-error" class="hidden error-overlay">
+                        <div class="error-text">
+                            <i class="mb-2 text-2xl ti ti-alert-triangle"></i>
+                            <div>Gagal memuat data Payment Methods</div>
+                        </div>
+                        <button class="retry-button" onclick="retryLoadData()">
+                            <i class="mr-1 ti ti-refresh"></i>Coba Lagi
+                        </button>
+                    </div>
+
+                    <!-- Empty overlay untuk chart 1 -->
+                    <div id="chart1-empty" class="hidden empty-overlay">
+                        <div class="empty-text">
+                            <i class="mb-2 text-3xl ti ti-database-off"></i>
+                            <div>Tidak ada data Payment Methods</div>
+                            <div class="mt-1 text-sm">untuk rentang tanggal yang dipilih</div>
+                        </div>
                     </div>
                 </div>
 
@@ -169,6 +250,25 @@
                             <div class="w-10 h-10 mb-2 border-b-2 border-green-600 rounded-full loading-spinner"></div>
                             <span class="text-xs font-medium text-gray-600">Memuat Programs...</span>
                         </div>
+
+                        <!-- Error overlay untuk chart 2 -->
+                        <div id="chart2-error" class="hidden error-overlay">
+                            <div class="error-text">
+                                <i class="mb-2 text-2xl ti ti-alert-triangle"></i>
+                                <div>Gagal memuat data Programs</div>
+                            </div>
+                            <button class="retry-button" onclick="retryLoadData()">
+                                <i class="mr-1 ti ti-refresh"></i>Coba Lagi
+                            </button>
+                        </div>
+
+                        <!-- Empty overlay untuk chart 2 -->
+                        <div id="chart2-empty" class="hidden empty-overlay">
+                            <div class="empty-text">
+                                <i class="mb-1 text-2xl ti ti-database-off"></i>
+                                <div class="text-sm">Tidak ada data Programs</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -181,6 +281,25 @@
                         <div id="chart3-loading" class="hidden loading-overlay">
                             <div class="w-10 h-10 mb-2 border-b-2 border-green-600 rounded-full loading-spinner"></div>
                             <span class="text-xs font-medium text-gray-600">Memuat Models...</span>
+                        </div>
+
+                        <!-- Error overlay untuk chart 3 -->
+                        <div id="chart3-error" class="hidden error-overlay">
+                            <div class="error-text">
+                                <i class="mb-2 text-2xl ti ti-alert-triangle"></i>
+                                <div>Gagal memuat data Models</div>
+                            </div>
+                            <button class="retry-button" onclick="retryLoadData()">
+                                <i class="mr-1 ti ti-refresh"></i>Coba Lagi
+                            </button>
+                        </div>
+
+                        <!-- Empty overlay untuk chart 3 -->
+                        <div id="chart3-empty" class="hidden empty-overlay">
+                            <div class="empty-text">
+                                <i class="mb-1 text-2xl ti ti-database-off"></i>
+                                <div class="text-sm">Tidak ada data Models</div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -195,6 +314,26 @@
                     <div id="line-chart-loading" class="hidden loading-overlay">
                         <div class="w-12 h-12 mb-3 border-b-2 border-green-600 rounded-full loading-spinner"></div>
                         <span class="text-sm font-medium text-gray-600">Memuat Status</span>
+                    </div>
+
+                    <!-- Error overlay untuk line chart -->
+                    <div id="line-chart-error" class="hidden error-overlay">
+                        <div class="error-text">
+                            <i class="mb-2 text-2xl ti ti-alert-triangle"></i>
+                            <div>Gagal memuat data Status</div>
+                        </div>
+                        <button class="retry-button" onclick="retryLoadData()">
+                            <i class="mr-1 ti ti-refresh"></i>Coba Lagi
+                        </button>
+                    </div>
+
+                    <!-- Empty overlay untuk line chart -->
+                    <div id="line-chart-empty" class="hidden empty-overlay">
+                        <div class="empty-text">
+                            <i class="mb-2 text-3xl ti ti-database-off"></i>
+                            <div>Tidak ada data Status</div>
+                            <div class="mt-1 text-sm">untuk rentang tanggal yang dipilih</div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -214,7 +353,7 @@
                         placeholder="Pilih rentang tanggal..." readonly />
                 </div>
 
-                 <!-- tempat kalender dirender -->
+                <!-- tempat kalender dirender -->
                 <div id="flatpickr-range-container" class="flex justify-center w-full p-2 rounded-lg shadow"></div>
 
                 <!-- Sales Select -->
@@ -465,6 +604,7 @@
                     activeRequests.unified = null;
 
                     if (response.success && response.data) {
+                        clearPreviousCharts();
                         const data = response.data;
 
                         // Render semua charts dengan data yang diterima
@@ -486,13 +626,11 @@
                         hasAnyRequestCompleted = true;
                         console.log('🔒 Unified request completed - locking controls');
                         disableCancelButtonAndLockCalendar();
-
-                        // Cleanup setelah selesai
-                        setTimeout(() => {
-                            isUpdatingCharts = false;
-                            hideAllLoadingStates();
-                            unlockCalendarAfterCompletion();
-                        }, 1000);
+                    } else {
+                        // Handle success=false case
+                        console.error('❌ API returned success=false:', response);
+                        clearPreviousCharts();
+                        showAllErrorStates();
                     }
                 },
                 error: function(xhr, status, error) {
@@ -502,24 +640,204 @@
                     if (status !== 'abort') {
                         console.error('❌ Error fetching unified analytics data:', error);
                         console.error('Response:', xhr.responseText);
+                        clearPreviousCharts();
+                        showAllErrorStates();
                     }
                 },
                 complete: function() {
-                    // Hide cancel button
                     setTimeout(() => {
-                        const cancelBtn = document.getElementById('cancel-loading-btn');
-                        if (cancelBtn) {
-                            cancelBtn.classList.add('hidden');
-                        }
+                        isUpdatingCharts = false;
+                        hideAllLoadingStates();
+                        unlockCalendarAfterCompletion();
                     }, 1000);
                 }
             });
         }
-        
+
         function hideAllLoadingStates() {
             const loadingStates = ['chart1-loading', 'chart2-loading', 'chart3-loading', 'line-chart-loading'];
             loadingStates.forEach(id => {
                 hideLoadingState(id.replace('-loading', ''));
+            });
+        }
+
+        function showAllErrorStates() {
+            const errorStates = ['chart1-error', 'chart2-error', 'chart3-error', 'line-chart-error'];
+            errorStates.forEach(id => {
+                showErrorState(id.replace('-error', ''));
+            });
+        }
+
+        function clearPreviousCharts() {
+            console.log('🧹 Clearing all previous charts...');
+
+            // Properly destroy chart instances
+            if (pieChart1) {
+                try {
+                    pieChart1.destroy();
+                    console.log('✅ PieChart1 destroyed');
+                } catch (e) {
+                    console.warn('⚠️ Error destroying pieChart1:', e);
+                }
+                pieChart1 = null;
+            }
+
+            if (pieChart2) {
+                try {
+                    pieChart2.destroy();
+                    console.log('✅ PieChart2 destroyed');
+                } catch (e) {
+                    console.warn('⚠️ Error destroying pieChart2:', e);
+                }
+                pieChart2 = null;
+            }
+
+            if (pieChart3) {
+                try {
+                    pieChart3.destroy();
+                    console.log('✅ PieChart3 destroyed');
+                } catch (e) {
+                    console.warn('⚠️ Error destroying pieChart3:', e);
+                }
+                pieChart3 = null;
+            }
+
+            if (lineChart) {
+                try {
+                    lineChart.destroy();
+                    console.log('✅ LineChart destroyed');
+                } catch (e) {
+                    console.warn('⚠️ Error destroying lineChart:', e);
+                }
+                lineChart = null;
+            }
+
+            // Clear the chart containers
+            const chartIds = ['pieChart1', 'pieChart2', 'pieChart3', 'lineChart'];
+            chartIds.forEach(id => {
+                const chartElement = document.getElementById(id);
+                if (chartElement) {
+                    chartElement.innerHTML = '';
+                    console.log(`🧹 Cleared container: ${id}`);
+                }
+            });
+
+            // Reset payment method labels to default
+            const cashElement = document.querySelector('#cash-label span');
+            const creditElement = document.querySelector('#credit-label span');
+            if (cashElement) cashElement.textContent = 'Cash 0%';
+            if (creditElement) creditElement.textContent = 'Credit 0%';
+
+            console.log('✅ All charts cleared successfully');
+        }
+
+        function clearPreviousChart(chartId) {
+            console.log(`🧹 Clearing chart with ID: ${chartId}`);
+
+            // Petakan chart ID ke variabel chart yang digunakan
+            const chartMap = {
+                pieChart1: 'pieChart1',
+                pieChart2: 'pieChart2',
+                pieChart3: 'pieChart3',
+                lineChart: 'lineChart'
+            };
+
+            // Ambil variabel chart yang terkait
+            if (chartMap[chartId] && window[chartMap[chartId]]) {
+                try {
+                    window[chartMap[chartId]].destroy();
+                    console.log(`✅ ${chartMap[chartId]} destroyed`);
+                } catch (e) {
+                    console.warn(`⚠️ Error destroying ${chartMap[chartId]}:`, e);
+                }
+                window[chartMap[chartId]] = null;
+            }
+
+            // Bersihkan elemen kontainernya
+            const chartElement = document.getElementById(chartId);
+            if (chartElement) {
+                chartElement.innerHTML = '';
+                console.log(`🧹 Cleared container: ${chartId}`);
+            }
+        }
+
+
+        function hideAllErrorStates() {
+            const errorStates = ['chart1-error', 'chart2-error', 'chart3-error', 'line-chart-error'];
+            errorStates.forEach(id => {
+                hideErrorState(id.replace('-error', ''));
+            });
+        }
+
+        function showErrorState(chartId) {
+            const element = document.getElementById(chartId + '-error');
+            if (element) {
+                element.classList.remove('hidden');
+                console.log(`❌ Showing error state for ${chartId}`);
+            }
+        }
+
+        function hideErrorState(chartId) {
+            const element = document.getElementById(chartId + '-error');
+            if (element) {
+                element.classList.add('hidden');
+            }
+        }
+
+        function showEmptyState(chartId) {
+            const element = document.getElementById(chartId + '-empty');
+            if (element) {
+                element.classList.remove('hidden');
+                console.log(`📭 Showing empty state for ${chartId}`);
+            }
+        }
+
+        function hideEmptyState(chartId) {
+            const element = document.getElementById(chartId + '-empty');
+            if (element) {
+                element.classList.add('hidden');
+            }
+        }
+
+        function retryLoadData() {
+            console.log('🔄 User clicked retry - reloading data');
+
+            // Hide all error states
+            hideAllErrorStates();
+
+            // Reset flags to allow new request
+            hasAnyRequestCompleted = false;
+            completedRequestsCount = 0;
+
+            // Get current date range and retry
+            const currentRange = document.getElementById('flatpickr-range').value;
+            if (currentRange && currentRange.includes(' to ')) {
+                const [startDate, endDate] = currentRange.split(' to ');
+                updateAllCharts(startDate, endDate);
+            } else {
+                // Use default current month if no range
+                const today = new Date();
+                const currentYear = today.getFullYear();
+                const currentMonth = today.getMonth();
+                const firstDay = new Date(currentYear, currentMonth, 1);
+                const lastDay = new Date(currentYear, currentMonth + 1, 0);
+
+                const startDate =
+                    `${firstDay.getFullYear()}-${String(firstDay.getMonth() + 1).padStart(2, '0')}-${String(firstDay.getDate()).padStart(2, '0')}`;
+                const endDate =
+                    `${lastDay.getFullYear()}-${String(lastDay.getMonth() + 1).padStart(2, '0')}-${String(lastDay.getDate()).padStart(2, '0')}`;
+
+                updateAllCharts(startDate, endDate);
+            }
+        }
+
+        function cancelAllActiveRequests() {
+            console.log('🛑 Cancelling all active requests');
+            Object.keys(activeRequests).forEach(key => {
+                if (activeRequests[key]) {
+                    activeRequests[key].abort();
+                    activeRequests[key] = null;
+                }
             });
         }
 
@@ -540,16 +858,6 @@
             }, 300); // Reduced from 500ms to 300ms for better responsiveness
         }
 
-        // Fungsi untuk cancel semua request yang sedang berjalan
-        function cancelAllActiveRequests() {
-            console.log('🛑 Cancelling all active requests');
-            Object.keys(activeRequests).forEach(key => {
-                if (activeRequests[key]) {
-                    activeRequests[key].abort();
-                    activeRequests[key] = null;
-                }
-            });
-        }
 
         // Initialize charts on page load with current month filter
         $(document).ready(function() {
@@ -574,6 +882,8 @@
 
         function updateAllCharts(startDate = null, endDate = null) {
             console.log('Updating all charts with date range:', startDate, 'to', endDate);
+            // Disable cancel button dan lock calendar
+            disableCancelButtonAndLockCalendar();
 
             // Set flag bahwa sedang update charts
             isUpdatingCharts = true;
@@ -594,13 +904,12 @@
                 console.log(`✅ Request completed: ${completedRequestsCount}/${totalRequestsExpected}`);
 
                 // Disable cancel button dan lock calendar setelah request pertama berhasil
-                if (completedRequestsCount === 1 && !hasAnyRequestCompleted) {
-                    hasAnyRequestCompleted = true;
-                    console.log('🔒 First request completed - locking calendar and disabling cancel');
+                // if (completedRequestsCount === 1 && !hasAnyRequestCompleted) {
+                //     hasAnyRequestCompleted = true;
+                //     console.log('🔒 First request completed - locking calendar and disabling cancel');
 
-                    // Disable cancel button dan lock calendar
-                    disableCancelButtonAndLockCalendar();
-                }
+
+                // }
 
                 // Check jika semua selesai untuk cleanup
                 if (completedRequestsCount >= totalRequestsExpected) {
@@ -609,14 +918,14 @@
 
                     // Hide cancel button setelah semua selesai
                     setTimeout(() => {
-                        const cancelBtn = document.getElementById('cancel-loading-btn');
-                        if (cancelBtn) {
-                            cancelBtn.classList.add('hidden');
-                            const buttonText = cancelBtn.querySelector('i').nextSibling;
-                            if (buttonText) {
-                                buttonText.textContent = ' Batalkan';
-                            }
-                        }
+                        // const cancelBtn = document.getElementById('cancel-loading-btn');
+                        // if (cancelBtn) {
+                        //     cancelBtn.classList.add('hidden');
+                        //     const buttonText = cancelBtn.querySelector('i').nextSibling;
+                        //     if (buttonText) {
+                        //         buttonText.textContent = ' Batalkan';
+                        //     }
+                        // }
 
                         unlockCalendarAfterCompletion();
                     }, 1000);
@@ -677,16 +986,16 @@
 
             // Show cancel button dan pastikan enabled
             setTimeout(() => {
-                const cancelBtn = document.getElementById('cancel-loading-btn');
-                if (cancelBtn) {
-                    cancelBtn.classList.remove('hidden');
-                    // Pastikan button enabled saat loading
-                    const button = cancelBtn.querySelector('button');
-                    if (button) {
-                        button.disabled = false;
-                        button.classList.remove('opacity-50', 'cursor-not-allowed');
-                    }
-                }
+                // const cancelBtn = document.getElementById('cancel-loading-btn');
+                // if (cancelBtn) {
+                //     cancelBtn.classList.remove('hidden');
+                //     // Pastikan button enabled saat loading
+                //     const button = cancelBtn.querySelector('button');
+                //     if (button) {
+                //         button.disabled = false;
+                //         button.classList.remove('opacity-50', 'cursor-not-allowed');
+                //     }
+                // }
             }, 1000); // Show after 1 second
 
             // Update labels to show loading
@@ -723,20 +1032,20 @@
         // Fungsi baru untuk disable cancel button dan lock calendar setelah 1 request berhasil
         function disableCancelButtonAndLockCalendar() {
             // Disable cancel button
-            const cancelBtn = document.getElementById('cancel-loading-btn');
-            if (cancelBtn) {
-                const button = cancelBtn.querySelector('button');
-                if (button) {
-                    button.disabled = true;
-                    button.classList.add('opacity-50', 'cursor-not-allowed');
+            // const cancelBtn = document.getElementById('cancel-loading-btn');
+            // if (cancelBtn) {
+            //     const button = cancelBtn.querySelector('button');
+            //     if (button) {
+            //         button.disabled = true;
+            //         button.classList.add('opacity-50', 'cursor-not-allowed');
 
-                    // Update text button
-                    const buttonText = button.querySelector('i').nextSibling;
-                    if (buttonText) {
-                        buttonText.textContent = ' Terkunci';
-                    }
-                }
-            }
+            //         // Update text button
+            //         const buttonText = button.querySelector('i').nextSibling;
+            //         if (buttonText) {
+            //             buttonText.textContent = ' Terkunci';
+            //         }
+            //     }
+            // }
 
             // Lock sales select
             const salesSelect = document.getElementById('sales-select');
@@ -839,10 +1148,10 @@
             });
 
             // Hide cancel button
-            const cancelBtn = document.getElementById('cancel-loading-btn');
-            if (cancelBtn) {
-                cancelBtn.classList.add('hidden');
-            }
+            // const cancelBtn = document.getElementById('cancel-loading-btn');
+            // if (cancelBtn) {
+            //     cancelBtn.classList.add('hidden');
+            // }
 
             // Reset flags
             isUpdatingCharts = false;
@@ -1211,21 +1520,33 @@
         function renderPaymentMethodChart(data) {
             console.log('Rendering payment method chart:', data);
 
+            // Hide all states first
+            hideLoadingState('chart1');
+            hideErrorState('chart1');
+            hideEmptyState('chart1');
+
             // Validation data
             if (!data || !data.series || !data.labels) {
                 console.warn('Invalid payment method data:', data);
-                hideLoadingState('chart1');
+
+                showEmptyState('chart1');
                 return;
             }
 
-            const currentLabels = pieChart1.w.config.labels;
+            // Check if data is empty
+            if (data.series.length === 0 || data.series.every(val => val === 0)) {
+                console.log('📭 Payment method data is empty');
+                showEmptyState('chart1');
+                return;
+            }
+
+            const currentLabels = pieChart1?.w?.config?.labels;
             const isLabelChanged = JSON.stringify(currentLabels) !== JSON.stringify(data.labels);
 
             if (isLabelChanged) {
-                recreatePaymentChart(data); // safer
+                recreatePaymentChart(data);
             } else {
                 pieChart1.updateSeries(data.series);
-                hideLoadingState('chart1');
             }
         }
 
@@ -1269,18 +1590,28 @@
         function renderProgramChart(data) {
             console.log('Rendering program chart:', data);
 
-            // Hide loading state
+            // Hide all states first
             hideLoadingState('chart2');
+            hideErrorState('chart2');
+            hideEmptyState('chart2');
 
             // Validasi minimal
             if (!data || !Array.isArray(data.series) || !Array.isArray(data.labels)) {
                 console.warn('Invalid program chart data:', data);
+                showEmptyState('chart2');
+                return;
+            }
+
+            // Check if data is empty
+            if (data.series.length === 0 || data.series.every(val => val === 0)) {
+                console.log('📭 Program data is empty');
+                showEmptyState('chart2');
                 return;
             }
 
             // Jika chart sudah dibuat
             if (pieChart2) {
-                const currentLabels = pieChart2.w?.config?.labels ?? [];
+                const currentLabels = pieChart2?.w?.config?.labels ?? [];
 
                 const labelsChanged = JSON.stringify(currentLabels) !== JSON.stringify(data.labels);
 
@@ -1289,8 +1620,7 @@
                     recreateProgramChart(data);
                 } else {
                     try {
-                        pieChart2.updateSeries(data.series, true); // update data
-                        // Bisa tambahkan update warna atau style ringan lainnya jika mau
+                        pieChart2.updateSeries(data.series, true);
                     } catch (err) {
                         console.warn('⚠️ Error updating series, recreating chart:', err);
                         recreateProgramChart(data);
@@ -1341,15 +1671,26 @@
         function renderModelChart(data) {
             console.log('Rendering model chart:', data);
 
+            // Hide all states first
             hideLoadingState('chart3');
+            hideErrorState('chart3');
+            hideEmptyState('chart3');
 
             if (!data || !Array.isArray(data.series) || !Array.isArray(data.labels)) {
                 console.warn('Invalid model chart data:', data);
+                showEmptyState('chart3');
+                return;
+            }
+
+            // Check if data is empty
+            if (data.series.length === 0 || data.series.every(val => val === 0)) {
+                console.log('📭 Model data is empty');
+                showEmptyState('chart3');
                 return;
             }
 
             if (pieChart3) {
-                const currentLabels = pieChart3.w?.config?.labels ?? [];
+                const currentLabels = pieChart3?.w?.config?.labels ?? [];
                 const labelsChanged = JSON.stringify(currentLabels) !== JSON.stringify(data.labels);
 
                 if (labelsChanged) {
@@ -1408,15 +1749,27 @@
         function renderStatusChart(data) {
             console.log('Rendering status chart:', data);
 
+            // Hide all states first
             hideLoadingState('line-chart');
+            hideErrorState('line-chart');
+            hideEmptyState('line-chart');
 
             if (!data || !Array.isArray(data.series) || !Array.isArray(data.categories)) {
                 console.warn('Invalid status chart data:', data);
+                showEmptyState('line-chart');
+                return;
+            }
+
+            // Check if data is empty
+            if (data.series.length === 0 || (data.series[0] && data.series[0].data && data.series[0].data.every(val =>
+                    val === 0))) {
+                console.log('📭 Status data is empty');
+                showEmptyState('line-chart');
                 return;
             }
 
             if (lineChart) {
-                const currentCategories = lineChart.w?.config?.xaxis?.categories ?? [];
+                const currentCategories = lineChart?.w?.config?.xaxis?.categories ?? [];
                 const categoriesChanged = JSON.stringify(currentCategories) !== JSON.stringify(data.categories);
 
                 if (categoriesChanged) {
@@ -1439,72 +1792,23 @@
             if (lineChart) lineChart.destroy();
 
             const options = {
-                series: data.series,
                 chart: {
-                    height: 350,
                     type: 'bar',
-                    animations: {
-                        enabled: true,
-                        easing: 'easeinout',
-                        speed: 600
-                    }
+                    height: 350
+                },
+                colors: ['#34d399', '#3b82f6', '#f59e0b'],
+                series: data.series,
+                xaxis: {
+                    categories: data.categories
                 },
                 plotOptions: {
                     bar: {
-                        horizontal: false,
-                        columnWidth: '50%',
+                        columnWidth: '40%',
                         endingShape: 'rounded'
                     }
                 },
-                colors: ['#34d399'], // Warna hijau modern
-                dataLabels: {
-                    enabled: true
-                },
-                title: {
-                    text: 'Ringkasan Status',
-                    align: 'center',
-                    style: {
-                        fontSize: '16px',
-                        color: '#1a1a1a'
-                    }
-                },
-                grid: {
-                    row: {
-                        colors: ['#f3f3f3', 'transparent'],
-                        opacity: 0.5
-                    },
-                },
-                xaxis: {
-                    categories: data.categories,
-                    title: {
-                        text: 'Status',
-                        style: {
-                            color: '#1a1a1a',
-                            fontWeight: 600
-                        }
-                    },
-                    labels: {
-                        style: {
-                            colors: '#1a1a1a'
-                        }
-                    }
-                },
-                yaxis: {
-                    title: {
-                        text: 'Jumlah',
-                        style: {
-                            color: '#1a1a1a',
-                            fontWeight: 600
-                        }
-                    },
-                    labels: {
-                        style: {
-                            colors: '#1a1a1a'
-                        }
-                    }
-                },
                 legend: {
-                    show: false
+                    show: true
                 }
             };
 
@@ -1512,6 +1816,7 @@
             lineChart.render();
         }
 
+        // Fungsi untuk mengupdate label Cash dan Credit
         function updatePaymentMethodLabels(percentages) {
             console.log('Updating payment method labels:', percentages);
 

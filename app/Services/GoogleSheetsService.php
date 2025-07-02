@@ -32,43 +32,87 @@ class GoogleSheetsService
                 $params['sales'] = $sales;
             }
 
-            $response = Http::timeout(20)->get($this->scriptUrl, $params);
+            $response = Http::timeout(30)->get($this->scriptUrl, $params);
 
             if ($response->failed()) {
                 Log::error('Failed fetching from Google Apps Script', [
                     'status' => $response->status(),
                     'body' => $response->body(),
+                    'url' => $this->scriptUrl,
+                    'params' => $params
                 ]);
-                return [];
+                throw new \Exception("Google Sheets API returned status {$response->status()}: {$response->body()}");
             }
 
             $data = $response->json();
 
-            // Jika gagal parse JSON, pastikan return array kosong
-            return is_array($data) ? $data : [];
+            // Jika gagal parse JSON atau bukan array, throw exception
+            if (!is_array($data)) {
+                Log::error('Invalid JSON response from Google Apps Script', [
+                    'response_body' => $response->body(),
+                    'parsed_data' => $data
+                ]);
+                throw new \Exception('Invalid response format from Google Sheets API');
+            }
+
+            Log::info('Successfully fetched data from Google Sheets', [
+                'rows_count' => count($data),
+                'params' => $params
+            ]);
+
+            return $data;
         } catch (\Exception $e) {
             Log::error('Exception from Google Apps Script call', [
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'params' => $params ?? []
             ]);
-            return [];
+            throw $e; // Re-throw untuk proper error handling
         }
     }
-
 
     // METODE BARU: Satu request untuk semua data
     public function getAllAnalyticsData(?string $startDate = null, ?string $endDate = null, ?string $sales = null): array
     {
-        // Ambil semua data A2:P dalam satu request
-        $data = $this->getDataFromScript($startDate, $endDate, 'A2:P', $sales);
+        try {
+            // Ambil semua data A2:P dalam satu request
+            $data = $this->getDataFromScript($startDate, $endDate, 'A2:P', $sales);
 
-        // Preprocessing semua statistik sekaligus
-        return [
-            'payment_methods' => $this->calculatePaymentMethodStats($data, 5),
-            'programs' => $this->calculateStats($data, 6),
-            'models' => $this->calculateStats($data, 4),
-            'status' => $this->calculateStatusSummary($data, 8),
-            'available_sales' => $this->extractSalesFromData($data, $sales)
-        ];
+            // Log untuk debugging
+            Log::info('Processing analytics data', [
+                'total_rows' => count($data),
+                'date_range' => "{$startDate} to {$endDate}",
+                'sales_filter' => $sales
+            ]);
+
+            // Preprocessing semua statistik sekaligus
+            $result = [
+                'payment_methods' => $this->calculatePaymentMethodStats($data, 5),
+                'programs' => $this->calculateStats($data, 6),
+                'models' => $this->calculateStats($data, 4),
+                'status' => $this->calculateStatusSummary($data, 8),
+                'available_sales' => $this->extractSalesFromData($data, $sales)
+            ];
+
+            // Log summary
+            Log::info('Analytics data processed successfully', [
+                'payment_methods_total' => $result['payment_methods']['total'],
+                'programs_total' => $result['programs']['total'],
+                'models_total' => $result['models']['total'],
+                'status_categories' => count($result['status']['categories']),
+                'available_sales_count' => count($result['available_sales'])
+            ]);
+
+            return $result;
+        } catch (\Exception $e) {
+            Log::error('Error in getAllAnalyticsData', [
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine()
+            ]);
+            throw $e; // Re-throw untuk proper error handling di controller
+        }
     }
 
     // Helper method untuk extract sales dari data yang sudah ada
@@ -109,7 +153,7 @@ class GoogleSheetsService
         $total = 0;
 
         foreach ($data as $row) {
-            if (isset($row[$columnIndex])) {
+            if (isset($row[$columnIndex]) && !empty(trim($row[$columnIndex]))) {
                 $method = trim($row[$columnIndex]);
                 if (in_array($method, ['Cash', 'Credit'])) {
                     $counts[$method]++;
@@ -118,6 +162,7 @@ class GoogleSheetsService
             }
         }
 
+        // Return structure bahkan jika empty
         return [
             'series' => array_values($counts),
             'labels' => array_keys($counts),
@@ -135,17 +180,18 @@ class GoogleSheetsService
         $total = 0;
 
         foreach ($data as $row) {
-            if (isset($row[$columnIndex])) {
+            if (isset($row[$columnIndex]) && !empty(trim($row[$columnIndex]))) {
                 $value = trim($row[$columnIndex]);
                 $counts[$value] = ($counts[$value] ?? 0) + 1;
                 $total++;
             }
         }
 
+        // Return structure bahkan jika empty
         if ($total === 0) {
             return [
-                'series' => [0],
-                'labels' => ['No Data'],
+                'series' => [],
+                'labels' => [],
                 'total' => 0
             ];
         }
@@ -245,9 +291,12 @@ class GoogleSheetsService
             $statusCounts[$status] = ($statusCounts[$status] ?? 0) + 1;
         }
 
-        // ⛔ Jika tidak ada status, beri default "No Status" => 0
+        // Return structure bahkan jika empty
         if (empty($statusCounts)) {
-            $statusCounts = ['No Status' => 0];
+            return [
+                'series' => [],
+                'categories' => [],
+            ];
         }
 
         // Bangun struktur series bar chart
@@ -256,11 +305,11 @@ class GoogleSheetsService
             'data' => array_values($statusCounts),
         ]];
 
-        $categories = array_keys($statusCounts); // Nama status sebagai kategori (label X)
+        $categories = array_keys($statusCounts);
 
         return [
             'series' => $series,
             'categories' => $categories,
         ];
     }
-};
+}
