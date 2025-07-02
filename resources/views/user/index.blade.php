@@ -208,6 +208,7 @@
                         <div class="error-text">
                             <i class="mb-2 text-2xl ti ti-alert-triangle"></i>
                             <div>Gagal memuat data Payment Methods</div>
+
                         </div>
                         <button class="retry-button" onclick="retryLoadData()">
                             <i class="mr-1 ti ti-refresh"></i>Coba Lagi
@@ -267,6 +268,7 @@
                             <div class="empty-text">
                                 <i class="mb-1 text-2xl ti ti-database-off"></i>
                                 <div class="text-sm">Tidak ada data Programs</div>
+                                <div class="mt-1 text-sm">untuk rentang tanggal yang dipilih</div>
                             </div>
                         </div>
                     </div>
@@ -299,6 +301,7 @@
                             <div class="empty-text">
                                 <i class="mb-1 text-2xl ti ti-database-off"></i>
                                 <div class="text-sm">Tidak ada data Models</div>
+                                <div class="mt-1 text-sm">untuk rentang tanggal yang dipilih</div>
                             </div>
                         </div>
                     </div>
@@ -506,6 +509,15 @@
                     // Show immediate visual feedback
                     showDateChangeIndicator();
 
+                    // selected sales to semua sales
+                    const salesSelect = document.getElementById('sales-select');
+                    if (salesSelect) {
+                        salesSelect.value = ''; // Reset to "Semua Sales"
+
+                        // and clear options except "Semua Sales"
+                        salesSelect.innerHTML = '<option value="">Semua Sales</option>';
+                    }
+
                     // Debounce untuk menghindari request bertumpuk
                     debouncedUpdateCharts(startStr, endStr);
                 }
@@ -628,8 +640,9 @@
                         disableCancelButtonAndLockCalendar();
                     } else {
                         // Handle success=false case
-                        console.error('❌ API returned success=false:', response);
                         clearPreviousCharts();
+                        hideAllEmptyStates();
+                        hideAllLoadingStates();
                         showAllErrorStates();
                     }
                 },
@@ -638,9 +651,9 @@
                     hideAllLoadingStates();
 
                     if (status !== 'abort') {
-                        console.error('❌ Error fetching unified analytics data:', error);
-                        console.error('Response:', xhr.responseText);
                         clearPreviousCharts();
+                        hideAllEmptyStates();
+                        hideAllLoadingStates();
                         showAllErrorStates();
                     }
                 },
@@ -665,6 +678,13 @@
             const errorStates = ['chart1-error', 'chart2-error', 'chart3-error', 'line-chart-error'];
             errorStates.forEach(id => {
                 showErrorState(id.replace('-error', ''));
+            });
+        }
+
+        function hideAllEmptyStates() {
+            const emptyStates = ['chart1', 'chart2', 'chart3', 'line-chart'];
+            emptyStates.forEach(id => {
+                hideEmptyState(id);
             });
         }
 
@@ -794,6 +814,7 @@
 
         function hideEmptyState(chartId) {
             const element = document.getElementById(chartId + '-empty');
+            console.log("anjay" + element)
             if (element) {
                 element.classList.add('hidden');
             }
@@ -932,11 +953,6 @@
                 }
             };
 
-            // Update semua charts dengan tracking completion
-            // updatePaymentMethodChart(startDate, endDate, checkCompleted);
-            // updateProgramChart(startDate, endDate, checkCompleted);
-            // updateModelChart(startDate, endDate, checkCompleted);
-            // updateStatusChart(startDate, endDate, checkCompleted);
             updateAllChartsUnified(startDate, endDate);
         }
 
@@ -1366,7 +1382,10 @@
 
     <script>
         // Global chart variables
-        let pieChart1, pieChart2, pieChart3, lineChart;
+        let pieChart1;
+        let pieChart2;
+        let pieChart3;
+        let lineChart;
 
         $(document).ready(function() {
             // Initialize empty charts first
@@ -1378,7 +1397,7 @@
             pieChart1 = new ApexCharts(document.querySelector("#pieChart1"), getEmptyPieOptions('Payment Methods'));
             pieChart1.render();
 
-            pieChart2 = new ApexCharts(document.querySelector("#pieChart2"), getEmptyDonutOptions('Programs'));
+            pieChart2 = new ApexCharts(document.querySelector("#pieChart2"), getEmptyPieOptions('Programs'));
             pieChart2.render();
 
             pieChart3 = new ApexCharts(document.querySelector("#pieChart3"), getEmptyPieOptions('Models'));
@@ -1830,7 +1849,7 @@
 
         function recreateStatusChart(data) {
             if (lineChart) lineChart.destroy();
-            
+
              const colors = [
                 '#218DA7', // 🟦 Biru kehijauan
                 '#A71616', // 🔴 Merah gelap

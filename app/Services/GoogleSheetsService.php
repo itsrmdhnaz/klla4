@@ -154,9 +154,13 @@ class GoogleSheetsService
 
         foreach ($data as $row) {
             if (isset($row[$columnIndex]) && !empty(trim($row[$columnIndex]))) {
-                $method = trim($row[$columnIndex]);
-                if (in_array($method, ['Cash', 'Credit'])) {
-                    $counts[$method]++;
+                $method = strtolower(trim($row[$columnIndex])); // ✅ konversi ke lowercase dulu
+
+                if (in_array($method, ['cash', 'credit'])) {
+                    // Gunakan ucfirst atau format lain untuk konsistensi key (opsional)
+                    $normalized = ucfirst($method); // hasil: 'Cash' atau 'Credit'
+
+                    $counts[$normalized] = ($counts[$normalized] ?? 0) + 1;
                     $total++;
                 }
             }
