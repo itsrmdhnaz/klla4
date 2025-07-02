@@ -1553,6 +1553,20 @@
         function recreatePaymentChart(data) {
             if (pieChart1) pieChart1.destroy();
 
+            const colors = [
+                '#E22126', // 🔴 Merah dasar (dari client)
+                '#E5DB9A', // 🟡 Kuning dasar (dari client)
+                '#2C3E50', // 🔵 Biru gelap netral
+                '#F39C12', // 🟠 Orange terang
+                '#27AE60', // 🟢 Hijau seimbang
+                '#8E44AD', // 🟣 Ungu tua
+                '#3498DB', // 🔵 Biru sedang
+                '#C0392B', // 🔴 Merah tua
+                '#1ABC9C', // 🟢 Toska segar
+                '#F1C40F' // 🟡 Kuning cerah
+            ];
+
+
             const options = {
                 series: data.series,
                 chart: {
@@ -1565,7 +1579,7 @@
                     }
                 },
                 labels: data.labels,
-                colors: ['#1a1a1a', '#2d3748', '#4a5568', '#718096', '#a0aec0'],
+                colors: colors,
                 title: {
                     text: 'Payment Methods',
                     align: 'center',
@@ -1634,6 +1648,19 @@
         function recreateProgramChart(data) {
             if (pieChart2) pieChart2.destroy();
 
+            const colors = [
+                '#1E19B6', // 🔵 Biru client
+                '#E60606', // 🔴 Merah client
+                '#FF12BC', // 🌸 Pink client
+                '#34D399', // 🟢 Hijau modern
+                '#FBBF24', // 🟡 Kuning terang (Tailwind amber)
+                '#3B82F6', // 🔷 Biru muda (Tailwind blue)
+                '#9333EA', // 🟣 Ungu tua
+                '#F472B6', // 🌺 Pink pastel
+                '#10B981', // 🟩 Hijau sejuk
+                '#EAB308' // 🟨 Emas terang
+            ];
+
             const options = {
                 series: data.series,
                 chart: {
@@ -1646,7 +1673,7 @@
                     }
                 },
                 labels: data.labels,
-                colors: ['#1a1a1a', '#2d3748', '#4a5568', '#718096', '#a0aec0'],
+                colors: colors,
                 title: {
                     text: 'Programs',
                     align: 'center',
@@ -1712,6 +1739,19 @@
         function recreateModelChart(data) {
             if (pieChart3) pieChart3.destroy();
 
+            const colors = [
+                '#7C4F20', // 🟤 Coklat dari client
+                '#1A12FF', // 🔵 Biru terang dari client
+                '#5D3A9B', // 🟣 Ungu dari client
+                '#FF9F1C', // 🟠 Orange terang
+                '#2EC4B6', // 🟢 Hijau toska segar
+                '#E71D36', // 🔴 Merah tajam
+                '#011627', // ⚫ Biru gelap solid
+                '#FF6B6B', // ❤️ Coral Pink
+                '#6C5CE7', // 🔵 Ungu muda terang
+                '#10B981' // 💚 Hijau modern (tailwind style)
+            ];
+
             const options = {
                 series: data.series,
                 chart: {
@@ -1724,7 +1764,7 @@
                     }
                 },
                 labels: data.labels,
-                colors: ['#1a1a1a', '#2d3748', '#4a5568', '#718096', '#a0aec0'],
+                colors: colors,
                 title: {
                     text: 'Models',
                     align: 'center',
@@ -1806,10 +1846,11 @@
                     bar: {
                         horizontal: false,
                         columnWidth: '50%',
-                        endingShape: 'rounded'
+                        endingShape: 'rounded',
+                        distributed: true // ✅ ini kuncinya!
                     }
                 },
-                colors: ['#34d399'], // Warna hijau modern
+                colors: ['#34d399', '#3b82f6', '#f59e0b'], // ✅ warna per bar (bukan per series)
                 dataLabels: {
                     enabled: true
                 },
@@ -1825,7 +1866,7 @@
                     row: {
                         colors: ['#f3f3f3', 'transparent'],
                         opacity: 0.5
-                    },
+                    }
                 },
                 xaxis: {
                     categories: data.categories,
@@ -1857,7 +1898,7 @@
                     }
                 },
                 legend: {
-                    show: false
+                    show: false // Tetap false karena cuma 1 series
                 }
             };
 
