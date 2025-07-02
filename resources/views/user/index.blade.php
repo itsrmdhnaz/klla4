@@ -1792,23 +1792,72 @@
             if (lineChart) lineChart.destroy();
 
             const options = {
-                chart: {
-                    type: 'bar',
-                    height: 350
-                },
-                colors: ['#34d399', '#3b82f6', '#f59e0b'],
                 series: data.series,
-                xaxis: {
-                    categories: data.categories
+                chart: {
+                    height: 350,
+                    type: 'bar',
+                    animations: {
+                        enabled: true,
+                        easing: 'easeinout',
+                        speed: 600
+                    }
                 },
                 plotOptions: {
                     bar: {
-                        columnWidth: '40%',
+                        horizontal: false,
+                        columnWidth: '50%',
                         endingShape: 'rounded'
                     }
                 },
+                colors: ['#34d399'], // Warna hijau modern
+                dataLabels: {
+                    enabled: true
+                },
+                title: {
+                    text: 'Ringkasan Status',
+                    align: 'center',
+                    style: {
+                        fontSize: '16px',
+                        color: '#1a1a1a'
+                    }
+                },
+                grid: {
+                    row: {
+                        colors: ['#f3f3f3', 'transparent'],
+                        opacity: 0.5
+                    },
+                },
+                xaxis: {
+                    categories: data.categories,
+                    title: {
+                        text: 'Status',
+                        style: {
+                            color: '#1a1a1a',
+                            fontWeight: 600
+                        }
+                    },
+                    labels: {
+                        style: {
+                            colors: '#1a1a1a'
+                        }
+                    }
+                },
+                yaxis: {
+                    title: {
+                        text: 'Jumlah',
+                        style: {
+                            color: '#1a1a1a',
+                            fontWeight: 600
+                        }
+                    },
+                    labels: {
+                        style: {
+                            colors: '#1a1a1a'
+                        }
+                    }
+                },
                 legend: {
-                    show: true
+                    show: false
                 }
             };
 
