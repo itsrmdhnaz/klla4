@@ -35,9 +35,12 @@ return [
         ],
     ],
 
-    'google_sheets' => [
-        'spreadsheet_id' => env('GOOGLE_SHEETS_SPREADSHEET_ID'),
-        'credentials_file' => env('GOOGLE_SHEETS_CREDENTIALS_FILE', 'klla5.json'),
-    ],
+    // 'google_sheets' => [
+    //     'spreadsheet_id' => env('GOOGLE_SHEETS_SPREADSHEET_ID'),
+    //     'credentials_file' => env('GOOGLE_SHEETS_CREDENTIALS_FILE', 'klla5.json'),
+    // ],
 
+    'google_sheets' => [
+        'script_url' => env('GOOGLE_SHEETS_SCRIPT_URL'),
+    ],
 ];

@@ -57,6 +57,7 @@
         .loading-overlay {
             backdrop-filter: blur(2px);
             transition: opacity 0.3s ease-in-out;
+            z-index: 10;
         }
 
         .loading-spinner {
@@ -64,8 +65,18 @@
         }
 
         @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Smooth chart transitions */
+        .apexcharts-canvas {
+            transition: opacity 0.3s ease-in-out;
         }
 
         /* Enhanced input styling */
@@ -79,6 +90,30 @@
             transform: translateY(-1px);
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
+
+        /* Improved loading state dalam card */
+        .chart-container {
+            position: relative;
+            min-height: 200px;
+        }
+
+        .chart-container .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+
+        .hidden {
+            display: none !important;
+        }
     </style>
 
 </head>
@@ -86,28 +121,29 @@
 <body class="font-sans">
 
     <!-- Div Layout -->
-    <div class="flex gap-4 leading-6 px-4">
+    <div class="flex gap-4 px-4 leading-6">
 
         <div class="flex-1">
-            <div class="rounded-lg bg-[#9bd69e] p-4 relative">
-                <!-- Chart 1 -->
-                <div id="pieChart1"></div>
-                <div class="mt-4">
-                    <div class="flex items-center gap-2 mb-2 bg-white p-2 rounded-lg" id="cash-label">
-                        <i class="ti ti-cash text-4xl"></i>
-                        <span>Cash 50%</span>
-                    </div>
-                    <div class="flex items-center gap-2 mb-2 bg-white p-2 rounded-lg" id="credit-label">
-                        <i class="ti ti-wallet text-4xl"></i>
-                        <span>Credit 50%</span>
+            <div class="rounded-lg bg-[#9bd69e] p-4">
+                <!-- Chart 1 Container dengan Loading -->
+                <div class="chart-container">
+                    <div id="pieChart1"></div>
+
+                    <!-- Loading overlay untuk chart 1 -->
+                    <div id="chart1-loading" class="hidden loading-overlay">
+                        <div class="w-12 h-12 mb-3 border-b-2 border-green-600 rounded-full loading-spinner"></div>
+                        <span class="text-sm font-medium text-gray-600">Memuat Payment Methods...</span>
                     </div>
                 </div>
-                
-                <!-- Loading overlay untuk chart 1 -->
-                <div id="chart1-loading" class="hidden absolute inset-0 bg-white bg-opacity-90 rounded-lg loading-overlay">
-                    <div class="flex flex-col items-center justify-center h-full">
-                        <div class="loading-spinner rounded-full h-12 w-12 border-b-2 border-green-600 mb-3"></div>
-                        <span class="text-sm text-gray-600 font-medium">Memuat Payment Methods...</span>
+
+                <div class="mt-4">
+                    <div class="flex items-center gap-2 p-2 mb-2 bg-white rounded-lg" id="cash-label">
+                        <i class="text-4xl ti ti-cash"></i>
+                        <span>Cash 50%</span>
+                    </div>
+                    <div class="flex items-center gap-2 p-2 mb-2 bg-white rounded-lg" id="credit-label">
+                        <i class="text-4xl ti ti-wallet"></i>
+                        <span>Credit 50%</span>
                     </div>
                 </div>
             </div>
@@ -115,38 +151,43 @@
 
         <!-- Content -->
         <div class="flex-2" bis_skin_checked="1">
-            <div class="flex justify-evenly mb-4 gap-4">
+            <div class="flex gap-4 mb-4 justify-evenly">
                 <!-- Div Pie Chart 2 -->
-                <div class="flex-1 rounded-lg bg-[#c8e6ca] p-4 relative">
-                    <div id="pieChart2"></div>
-                    <!-- Loading overlay untuk chart 2 -->
-                    <div id="chart2-loading" class="hidden absolute inset-0 bg-white bg-opacity-90 rounded-lg loading-overlay">
-                        <div class="flex flex-col items-center justify-center h-full">
-                            <div class="loading-spinner rounded-full h-10 w-10 border-b-2 border-green-600 mb-2"></div>
-                            <span class="text-xs text-gray-600 font-medium">Memuat Programs...</span>
+                <div class="flex-1 rounded-lg bg-[#c8e6ca] p-4">
+                    <div class="chart-container">
+                        <div id="pieChart2"></div>
+
+                        <!-- Loading overlay untuk chart 2 -->
+                        <div id="chart2-loading" class="hidden loading-overlay">
+                            <div class="w-10 h-10 mb-2 border-b-2 border-green-600 rounded-full loading-spinner"></div>
+                            <span class="text-xs font-medium text-gray-600">Memuat Programs...</span>
                         </div>
                     </div>
                 </div>
+
                 <!-- Div Pie Chart 3 -->
-                <div class="flex-1 rounded-lg bg-[#c8e6ca] p-4 relative">
-                    <div id="pieChart3"></div>
-                    <!-- Loading overlay untuk chart 3 -->
-                    <div id="chart3-loading" class="hidden absolute inset-0 bg-white bg-opacity-90 rounded-lg loading-overlay">
-                        <div class="flex flex-col items-center justify-center h-full">
-                            <div class="loading-spinner rounded-full h-10 w-10 border-b-2 border-green-600 mb-2"></div>
-                            <span class="text-xs text-gray-600 font-medium">Memuat Models...</span>
+                <div class="flex-1 rounded-lg bg-[#c8e6ca] p-4">
+                    <div class="chart-container">
+                        <div id="pieChart3"></div>
+
+                        <!-- Loading overlay untuk chart 3 -->
+                        <div id="chart3-loading" class="hidden loading-overlay">
+                            <div class="w-10 h-10 mb-2 border-b-2 border-green-600 rounded-full loading-spinner"></div>
+                            <span class="text-xs font-medium text-gray-600">Memuat Models...</span>
                         </div>
                     </div>
                 </div>
             </div>
+
             <!-- Div Line Chart -->
-            <div class="rounded-lg bg-[#c8e6ca] p-4 relative">
-                <div id="lineChart"></div>
-                <!-- Loading overlay untuk line chart -->
-                <div id="line-chart-loading" class="hidden absolute inset-0 bg-white bg-opacity-90 rounded-lg loading-overlay">
-                    <div class="flex flex-col items-center justify-center h-full">
-                        <div class="loading-spinner rounded-full h-12 w-12 border-b-2 border-green-600 mb-3"></div>
-                        <span class="text-sm text-gray-600 font-medium">Memuat Status Over Time...</span>
+            <div class="rounded-lg bg-[#c8e6ca] p-4">
+                <div class="chart-container">
+                    <div id="lineChart"></div>
+
+                    <!-- Loading overlay untuk line chart -->
+                    <div id="line-chart-loading" class="hidden loading-overlay">
+                        <div class="w-12 h-12 mb-3 border-b-2 border-green-600 rounded-full loading-spinner"></div>
+                        <span class="text-sm font-medium text-gray-600">Memuat Status Over Time...</span>
                     </div>
                 </div>
             </div>
@@ -154,19 +195,30 @@
 
         <!-- Div Calendar -->
         <div class="">
-        <!-- <div class="flex-1"> -->
+            <!-- <div class="flex-1"> -->
             <div class="rounded-lg bg-[#9bd69e] p-4 relative">
-                <div class="text-2xl font-semibold mb-2 text-center">Tanggal</div>
+                <div class="mb-2 text-2xl font-semibold text-center">Tanggal</div>
 
-                <input type="text" id="flatpickr-range" class="w-full px-4 py-2 rounded-lg border border-gray-300 bg-white text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent shadow-sm mb-4" placeholder="Pilih rentang tanggal..." readonly />
+                <input type="text" id="flatpickr-range"
+                    class="w-full px-4 py-2 mb-4 text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent"
+                    placeholder="Pilih rentang tanggal..." readonly />
 
                 <!-- tempat kalender dirender -->
-                <div id="flatpickr-range-container" class="rounded-lg p-2 shadow w-full flex justify-center"></div>
-                
+                <div id="flatpickr-range-container" class="flex justify-center w-full p-2 rounded-lg shadow"></div>
+
+                <!-- Cancel button - hanya tampil ketika sedang loading -->
+                <div id="cancel-loading-btn" class="hidden mt-4">
+                    <button onclick="cancelAllRequests()"
+                        class="w-full px-4 py-2 text-white transition-colors duration-200 bg-red-500 rounded-lg hover:bg-red-600">
+                        <i class="mr-2 ti ti-x"></i>Batalkan
+                    </button>
+                </div>
+
                 <!-- Loading overlay untuk calendar section -->
-                <div id="calendar-loading" class="hidden absolute inset-0 bg-white bg-opacity-80 rounded-lg loading-overlay">
+                <div id="calendar-loading"
+                    class="absolute inset-0 hidden bg-white rounded-lg bg-opacity-80 loading-overlay">
                     <div class="flex flex-col items-center justify-center h-full">
-                        <div class="loading-spinner rounded-full h-8 w-8 border-b-2 border-green-600 mb-2"></div>
+                        <div class="w-8 h-8 mb-2 border-b-2 border-green-600 rounded-full loading-spinner"></div>
                         <span class="text-sm text-gray-600">Memuat data...</span>
                     </div>
                 </div>
@@ -177,110 +229,453 @@
 
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script>
+        // Global variables untuk debouncing dan request cancellation
+        let debounceTimer = null;
+        let activeRequests = {
+            payment: null,
+            program: null,
+            model: null,
+            status: null
+        };
+        let isUpdatingCharts = false;
+
+        // Tambahan: Variabel untuk menyimpan tanggal sebelumnya
+        let previousDateRange = null;
+        let flatpickrInstance = null;
+
+        // Tambahan: Tracking untuk completion - ubah logika menjadi setelah 1 request berhasil
+        let completedRequestsCount = 0;
+        let totalRequestsExpected = 4; // Fix: tambahkan variabel yang hilang
+        let hasAnyRequestCompleted = false; // Flag untuk track apakah sudah ada request yang berhasil
+
         // Set default date range to current month
         const today = new Date();
-        
+
         // Fix: Gunakan cara yang lebih eksplisit untuk menghitung first dan last day
         const currentYear = today.getFullYear();
         const currentMonth = today.getMonth(); // 0-based (0 = January, 6 = July)
-        
+
         const firstDayOfMonth = new Date(currentYear, currentMonth, 1);
-        const lastDayOfMonth = new Date(currentYear, currentMonth + 1, 0); // Day 0 of next month = last day of current month
-        
+        const lastDayOfMonth = new Date(currentYear, currentMonth + 1,
+            0); // Day 0 of next month = last day of current month
+
         console.log('Today:', today.toISOString().split('T')[0]);
         console.log('Current month:', currentMonth + 1); // +1 to make it 1-based
         console.log('First day calculated:', firstDayOfMonth.toISOString().split('T')[0]);
         console.log('Last day calculated:', lastDayOfMonth.toISOString().split('T')[0]);
-        
-        flatpickr('#flatpickr-range', {
-            mode: 'range',               
-            inline: true,                
+
+        flatpickrInstance = flatpickr('#flatpickr-range', {
+            mode: 'range',
+            inline: true,
             appendTo: document.getElementById('flatpickr-range-container'),
             dateFormat: 'Y-m-d',
             defaultDate: [firstDayOfMonth, lastDayOfMonth],
+            onOpen() {
+                console.log('📅 Calendar opened - user is selecting dates');
+                // Add visual feedback when calendar is being used
+                const calendarContainer = document.getElementById('flatpickr-range-container');
+                if (calendarContainer) {
+                    calendarContainer.style.opacity = '0.7';
+                }
+            },
+            onClose() {
+                console.log('📅 Calendar closed');
+                // Remove visual feedback
+                const calendarContainer = document.getElementById('flatpickr-range-container');
+                if (calendarContainer) {
+                    calendarContainer.style.opacity = '1';
+                }
+            },
             onChange(selectedDates) {
                 console.log('🔄 onChange triggered!');
+
+                // Cek apakah sudah ada request yang berhasil - jika ya, blokir perubahan tanggal
+                if (hasAnyRequestCompleted) {
+                    console.log('⚠️ Date change blocked - request already completed');
+
+                    // Kembalikan ke tanggal sebelumnya tanpa trigger onChange
+                    if (previousDateRange) {
+                        const [prevStart, prevEnd] = previousDateRange.split(' to ');
+                        if (prevStart && prevEnd) {
+                            setTimeout(() => {
+                                flatpickrInstance.setDate([prevStart, prevEnd], false);
+                                document.getElementById('flatpickr-range').value = previousDateRange;
+                            }, 0);
+                        }
+                    }
+                    return; // Stop execution
+                }
+
                 console.log('Raw selectedDates:', selectedDates);
-                
+
                 if (selectedDates.length === 2) {
                     const [startDateObj, endDateObj] = selectedDates;
-                    
+
                     console.log('📅 Start Date Object:', startDateObj);
                     console.log('📅 End Date Object:', endDateObj);
                     console.log('📅 Start toString():', startDateObj.toString());
                     console.log('📅 End toString():', endDateObj.toString());
-                    
+
                     // Fix timezone issue - gunakan getFullYear, getMonth, getDate untuk menghindari timezone shift
-                    const startStr = `${startDateObj.getFullYear()}-${String(startDateObj.getMonth() + 1).padStart(2, '0')}-${String(startDateObj.getDate()).padStart(2, '0')}`;
-                    const endStr = `${endDateObj.getFullYear()}-${String(endDateObj.getMonth() + 1).padStart(2, '0')}-${String(endDateObj.getDate()).padStart(2, '0')}`;
-                    
+                    const startStr =
+                        `${startDateObj.getFullYear()}-${String(startDateObj.getMonth() + 1).padStart(2, '0')}-${String(startDateObj.getDate()).padStart(2, '0')}`;
+                    const endStr =
+                        `${endDateObj.getFullYear()}-${String(endDateObj.getMonth() + 1).padStart(2, '0')}-${String(endDateObj.getDate()).padStart(2, '0')}`;
+
                     console.log('✅ Final Start Date:', startStr);
                     console.log('✅ Final End Date:', endStr);
-                    
+
+                    // Simpan tanggal sebelumnya sebelum update
+                    const currentInput = document.getElementById('flatpickr-range').value;
+                    if (currentInput && currentInput.includes(' to ')) {
+                        previousDateRange = currentInput;
+                        console.log('💾 Saved previous date range:', previousDateRange);
+                    }
+
                     // Update input display
                     document.getElementById('flatpickr-range').value = `${startStr} to ${endStr}`;
-                    
-                    // Update all charts when date range changes
-                    updateAllCharts(startStr, endStr);
+
+                    // Show immediate visual feedback
+                    showDateChangeIndicator();
+
+                    // Debounce untuk menghindari request bertumpuk
+                    debouncedUpdateCharts(startStr, endStr);
                 }
             }
         });
 
+        // Fungsi untuk memberikan visual feedback saat user mengubah tanggal
+        function showDateChangeIndicator() {
+            const input = document.getElementById('flatpickr-range');
+            if (input) {
+                input.style.borderColor = '#f59e0b'; // Orange border
+                input.style.backgroundColor = '#fef3c7'; // Light yellow background
+
+                // Reset after delay
+                setTimeout(() => {
+                    input.style.borderColor = '';
+                    input.style.backgroundColor = '';
+                }, 1000);
+            }
+        }
+
+        // Fungsi debouncing untuk update charts
+        function debouncedUpdateCharts(startDate, endDate) {
+            // Cancel timer sebelumnya jika ada
+            if (debounceTimer) {
+                clearTimeout(debounceTimer);
+            }
+
+            // Cancel semua request yang sedang berjalan
+            cancelAllActiveRequests();
+
+            // Set timer baru dengan delay yang lebih pendek untuk responsivitas yang lebih baik
+            debounceTimer = setTimeout(() => {
+                console.log('🚀 Executing debounced update charts');
+                updateAllCharts(startDate, endDate);
+            }, 300); // Reduced from 500ms to 300ms for better responsiveness
+        }
+
+        // Fungsi untuk cancel semua request yang sedang berjalan
+        function cancelAllActiveRequests() {
+            console.log('🛑 Cancelling all active requests');
+            Object.keys(activeRequests).forEach(key => {
+                if (activeRequests[key]) {
+                    activeRequests[key].abort();
+                    activeRequests[key] = null;
+                }
+            });
+        }
+
         // Initialize charts on page load with current month filter
         $(document).ready(function() {
             // Fix timezone issue - gunakan manual date formatting
-            const startDate = `${firstDayOfMonth.getFullYear()}-${String(firstDayOfMonth.getMonth() + 1).padStart(2, '0')}-${String(firstDayOfMonth.getDate()).padStart(2, '0')}`;
-            const endDate = `${lastDayOfMonth.getFullYear()}-${String(lastDayOfMonth.getMonth() + 1).padStart(2, '0')}-${String(lastDayOfMonth.getDate()).padStart(2, '0')}`;
-            
+            const startDate =
+                `${firstDayOfMonth.getFullYear()}-${String(firstDayOfMonth.getMonth() + 1).padStart(2, '0')}-${String(firstDayOfMonth.getDate()).padStart(2, '0')}`;
+            const endDate =
+                `${lastDayOfMonth.getFullYear()}-${String(lastDayOfMonth.getMonth() + 1).padStart(2, '0')}-${String(lastDayOfMonth.getDate()).padStart(2, '0')}`;
+
             console.log('🚀 Initial load - calculated dates:');
             console.log('Start Date:', startDate);
             console.log('End Date:', endDate);
-            
-            // Set initial input display
-            document.getElementById('flatpickr-range').value = `${startDate} to ${endDate}`;
-            
+
+            // Set initial input display dan simpan sebagai previous
+            const initialRange = `${startDate} to ${endDate}`;
+            document.getElementById('flatpickr-range').value = initialRange;
+            previousDateRange = initialRange;
+
+            // Update charts without debouncing pada initial load
             updateAllCharts(startDate, endDate);
         });
 
         function updateAllCharts(startDate = null, endDate = null) {
             console.log('Updating all charts with date range:', startDate, 'to', endDate);
+
+            // Set flag bahwa sedang update charts
+            isUpdatingCharts = true;
             
-            // Show loading state for all charts
+            // Reset completion tracking - reset semua flag untuk request baru
+            completedRequestsCount = 0;
+            hasAnyRequestCompleted = false; // Reset flag saat mulai request baru
+
+            // Cancel semua request yang sedang berjalan sebelumnya
+            cancelAllActiveRequests();
+
+            // Show loading state untuk semua charts
             showAllLoadingStates();
+
+            // Track completion status - ubah logika untuk disable setelah 1 request berhasil
+            const checkCompleted = () => {
+                completedRequestsCount++;
+                console.log(`✅ Request completed: ${completedRequestsCount}/${totalRequestsExpected}`);
+                
+                // Disable cancel button dan lock calendar setelah request pertama berhasil
+                if (completedRequestsCount === 1 && !hasAnyRequestCompleted) {
+                    hasAnyRequestCompleted = true;
+                    console.log('🔒 First request completed - locking calendar and disabling cancel');
+                    
+                    // Disable cancel button dan lock calendar
+                    disableCancelButtonAndLockCalendar();
+                }
+                
+                // Check jika semua selesai untuk cleanup
+                if (completedRequestsCount >= totalRequestsExpected) {
+                    isUpdatingCharts = false;
+                    console.log('✅ All charts updated successfully');
+                    
+                    // Hide cancel button setelah semua selesai
+                    setTimeout(() => {
+                        const cancelBtn = document.getElementById('cancel-loading-btn');
+                        if (cancelBtn) {
+                            cancelBtn.classList.add('hidden');
+                            const buttonText = cancelBtn.querySelector('i').nextSibling;
+                    if (buttonText) {
+                        buttonText.textContent = ' Batalkan';
+                    }
+                        }
+                        
+                        unlockCalendarAfterCompletion();
+                    }, 1000);
+                }
+            };
+
+            // Update semua charts dengan tracking completion
+            updatePaymentMethodChart(startDate, endDate, checkCompleted);
+            updateProgramChart(startDate, endDate, checkCompleted);
+            updateModelChart(startDate, endDate, checkCompleted);
+            updateStatusChart(startDate, endDate, checkCompleted);
+        }
+        
+        // Fungsi untuk unlock calendar setelah semua request selesai
+        function unlockCalendarAfterCompletion() {
+            // Unlock calendar
+            const calendarContainer = document.getElementById('flatpickr-range-container');
+            if (calendarContainer) {
+                calendarContainer.style.pointerEvents = '';
+                calendarContainer.style.opacity = '';
+                calendarContainer.style.filter = '';
+            }
             
-            updatePaymentMethodChart(startDate, endDate);
-            updateProgramChart(startDate, endDate);
-            updateModelChart(startDate, endDate);
-            updateStatusChart(startDate, endDate);
+            // Unlock input field
+            const inputField = document.getElementById('flatpickr-range');
+            if (inputField) {
+                inputField.style.backgroundColor = '';
+                inputField.style.cursor = '';
+                inputField.disabled = false;
+            }
+            
+            // Reset flag untuk memungkinkan request baru
+            hasAnyRequestCompleted = false;
+            
+            console.log('🔓 Calendar unlocked - ready for new date selection');
         }
 
         function showAllLoadingStates() {
-            // Show loading overlays
-            document.getElementById('chart1-loading').classList.remove('hidden');
-            document.getElementById('chart2-loading').classList.remove('hidden');
-            document.getElementById('chart3-loading').classList.remove('hidden');
-            document.getElementById('line-chart-loading').classList.remove('hidden');
-            
+            // Show loading overlays dengan slight delay untuk smooth transition
+            const loadingStates = ['chart1-loading', 'chart2-loading', 'chart3-loading', 'line-chart-loading'];
+            loadingStates.forEach((id, index) => {
+                setTimeout(() => {
+                    const element = document.getElementById(id);
+                    if (element) {
+                        element.classList.remove('hidden');
+                    }
+                }, index * 50); // Stagger the loading appearance
+            });
+
+            // Show cancel button dan pastikan enabled
+            setTimeout(() => {
+                const cancelBtn = document.getElementById('cancel-loading-btn');
+                if (cancelBtn) {
+                    cancelBtn.classList.remove('hidden');
+                    // Pastikan button enabled saat loading
+                    const button = cancelBtn.querySelector('button');
+                    if (button) {
+                        button.disabled = false;
+                        button.classList.remove('opacity-50', 'cursor-not-allowed');
+                    }
+                }
+            }, 1000); // Show after 1 second
+
             // Update labels to show loading
             const cashElement = document.querySelector('#cash-label span');
             const creditElement = document.querySelector('#credit-label span');
-            
+
             if (cashElement) cashElement.textContent = 'Loading...';
             if (creditElement) creditElement.textContent = 'Loading...';
         }
 
         function hideLoadingState(chartId) {
-            document.getElementById(chartId + '-loading').classList.add('hidden');
+            const element = document.getElementById(chartId + '-loading');
+            if (element && !element.classList.contains('hidden')) {
+                console.log(`🔄 Hiding loading state for ${chartId}`);
+
+                // Add immediate smooth fade out
+                element.style.transition = 'opacity 0.3s ease-out';
+                element.style.opacity = '0';
+
+                setTimeout(() => {
+                    element.classList.add('hidden');
+                    element.style.opacity = '1'; // Reset for next time
+                    element.style.transition = ''; // Reset transition
+                }, 300);
+            }
+
+            // Fix: hapus log yang menggunakan variabel undefined
+            console.log(`📊 Chart ${chartId} completed. Total completed: ${completedRequestsCount}/${totalRequestsExpected}`);
         }
 
-        function updatePaymentMethodChart(startDate = null, endDate = null) {
+        // Hapus fungsi disableCancelButton() yang tidak terpakai dan replace dengan yang benar
+        
+        // Fungsi baru untuk disable cancel button dan lock calendar setelah 1 request berhasil
+        function disableCancelButtonAndLockCalendar() {
+            // Disable cancel button
+            const cancelBtn = document.getElementById('cancel-loading-btn');
+            if (cancelBtn) {
+                const button = cancelBtn.querySelector('button');
+                if (button) {
+                    button.disabled = true;
+                    button.classList.add('opacity-50', 'cursor-not-allowed');
+                    
+                    // Update text button
+                    const buttonText = button.querySelector('i').nextSibling;
+                    if (buttonText) {
+                        buttonText.textContent = ' Terkunci';
+                    }
+                }
+            }
+            
+            // Lock calendar - disable interaction dengan visual feedback
+            const calendarContainer = document.getElementById('flatpickr-range-container');
+            if (calendarContainer) {
+                calendarContainer.style.pointerEvents = 'none';
+                calendarContainer.style.opacity = '0.5';
+                calendarContainer.style.filter = 'grayscale(1)';
+            }
+            
+            // Lock input field
+            const inputField = document.getElementById('flatpickr-range');
+            if (inputField) {
+                inputField.style.backgroundColor = '#f3f4f6';
+                inputField.style.cursor = 'not-allowed';
+                inputField.disabled = true;
+            }
+            
+            console.log('🔒 Calendar and cancel button locked');
+        }
+
+        // Fungsi untuk unlock calendar dan enable cancel button (untuk testing/debugging)
+        function unlockCalendarAndEnableCancel() {
+            // Unlock calendar
+            const calendarContainer = document.getElementById('flatpickr-range-container');
+            if (calendarContainer) {
+                calendarContainer.style.pointerEvents = '';
+                calendarContainer.style.opacity = '';
+                calendarContainer.style.filter = '';
+            }
+            
+            // Unlock input field
+            const inputField = document.getElementById('flatpickr-range');
+            if (inputField) {
+                inputField.style.backgroundColor = '';
+                inputField.style.cursor = '';
+                inputField.disabled = false;
+            }
+            
+            // Reset flags
+            hasAnyRequestCompleted = false;
+            completedRequestsCount = 0;
+            
+            console.log('🔓 Calendar and cancel button unlocked');
+        }
+
+        // Fungsi untuk cancel semua request dari UI
+        function cancelAllRequests() {
+            console.log('🚫 User manually cancelled all requests');
+
+            // Cek apakah sudah ada request yang berhasil - jika ya, tidak bisa cancel
+            if (hasAnyRequestCompleted) {
+                console.log('⚠️ Cannot cancel - at least one request already completed');
+                return;
+            }
+
+            // Cancel timer debounce
+            if (debounceTimer) {
+                clearTimeout(debounceTimer);
+            }
+
+            // Cancel semua active requests
+            cancelAllActiveRequests();
+
+            // Kembalikan ke tanggal sebelumnya jika ada
+            if (previousDateRange) {
+    const [prevStart, prevEnd] = previousDateRange.split(' to ');
+    if (prevStart && prevEnd && flatpickrInstance) {
+        // Kembalikan kalender dan input ke range sebelumnya tanpa trigger onChange
+        flatpickrInstance.setDate([prevStart, prevEnd], false);
+        document.getElementById('flatpickr-range').value = previousDateRange;
+
+        console.log('↩️ Restored previous date range:', previousDateRange);
+    } else {
+        console.warn('⚠️ Gagal mengembalikan tanggal sebelumnya - format tidak valid');
+    }
+}
+
+
+            // Hide semua loading states
+            const allLoadingStates = ['chart1-loading', 'chart2-loading', 'chart3-loading', 'line-chart-loading'];
+            allLoadingStates.forEach(id => {
+                hideLoadingState(id.replace('-loading', ''));
+            });
+
+            // Hide cancel button
+            const cancelBtn = document.getElementById('cancel-loading-btn');
+            if (cancelBtn) {
+                cancelBtn.classList.add('hidden');
+            }
+
+            // Reset flags
+            isUpdatingCharts = false;
+            completedRequestsCount = 0;
+            // Reset hasAnyRequestCompleted juga saat cancel manual
+            hasAnyRequestCompleted = false;
+
+            // Show notification
+            console.log('✅ All requests cancelled by user');
+        }
+
+        function updatePaymentMethodChart(startDate = null, endDate = null, onComplete = null) {
             console.log('📤 SENDING Payment Method Request:', {
                 url: '/api/analytics/payment-method',
                 start_date: startDate,
                 end_date: endDate
             });
-            
-            $.ajax({
+
+            // Cancel request sebelumnya jika ada
+            if (activeRequests.payment) {
+                activeRequests.payment.abort();
+            }
+
+            activeRequests.payment = $.ajax({
                 url: '/api/analytics/payment-method',
                 type: 'GET',
                 data: {
@@ -289,22 +684,38 @@
                 },
                 success: function(response) {
                     console.log('✅ Payment method response:', response);
-                    hideLoadingState('chart1');
+                    activeRequests.payment = null; // Clear reference
+
                     if (response.success) {
                         renderPaymentMethodChart(response.data);
                         updatePaymentMethodLabels(response.data.percentages);
                     }
+                    if (onComplete) onComplete();
                 },
                 error: function(xhr, status, error) {
-                    console.error('❌ Error fetching payment method data:', error);
-                    console.error('Response:', xhr.responseText);
+                    activeRequests.payment = null; // Clear reference
+                    hideLoadingState('chart1');
+
+                    // Jangan log error jika request dibatalkan
+                    if (status !== 'abort') {
+                        console.error('❌ Error fetching payment method data:', error);
+                        console.error('Response:', xhr.responseText);
+                    }
+                    if (onComplete) onComplete();
+                },
+                complete: function() {
                     hideLoadingState('chart1');
                 }
             });
         }
 
-        function updateProgramChart(startDate = null, endDate = null) {
-            $.ajax({
+        function updateProgramChart(startDate = null, endDate = null, onComplete = null) {
+            // Cancel request sebelumnya jika ada
+            if (activeRequests.program) {
+                activeRequests.program.abort();
+            }
+
+            activeRequests.program = $.ajax({
                 url: '/api/analytics/program',
                 type: 'GET',
                 data: {
@@ -313,21 +724,36 @@
                 },
                 success: function(response) {
                     console.log('Program response:', response);
-                    hideLoadingState('chart2');
+                    activeRequests.program = null; // Clear reference
+
                     if (response.success) {
                         renderProgramChart(response.data);
+                    } else {
+                        hideLoadingState('chart2');
                     }
+                    if (onComplete) onComplete();
                 },
                 error: function(xhr, status, error) {
-                    console.error('Error fetching program data:', error);
-                    console.error('Response:', xhr.responseText);
+                    activeRequests.program = null; // Clear reference
                     hideLoadingState('chart2');
+
+                    // Jangan log error jika request dibatalkan
+                    if (status !== 'abort') {
+                        console.error('Error fetching program data:', error);
+                        console.error('Response:', xhr.responseText);
+                    }
+                    if (onComplete) onComplete();
                 }
             });
         }
 
-        function updateModelChart(startDate = null, endDate = null) {
-            $.ajax({
+        function updateModelChart(startDate = null, endDate = null, onComplete = null) {
+            // Cancel request sebelumnya jika ada
+            if (activeRequests.model) {
+                activeRequests.model.abort();
+            }
+
+            activeRequests.model = $.ajax({
                 url: '/api/analytics/model',
                 type: 'GET',
                 data: {
@@ -336,21 +762,36 @@
                 },
                 success: function(response) {
                     console.log('Model response:', response);
-                    hideLoadingState('chart3');
+                    activeRequests.model = null; // Clear reference
+
                     if (response.success) {
                         renderModelChart(response.data);
+                    } else {
+                        hideLoadingState('chart3');
                     }
+                    if (onComplete) onComplete();
                 },
                 error: function(xhr, status, error) {
-                    console.error('Error fetching model data:', error);
-                    console.error('Response:', xhr.responseText);
+                    activeRequests.model = null; // Clear reference
                     hideLoadingState('chart3');
+
+                    // Jangan log error jika request dibatalkan
+                    if (status !== 'abort') {
+                        console.error('Error fetching model data:', error);
+                        console.error('Response:', xhr.responseText);
+                    }
+                    if (onComplete) onComplete();
                 }
             });
         }
 
-        function updateStatusChart(startDate = null, endDate = null) {
-            $.ajax({
+        function updateStatusChart(startDate = null, endDate = null, onComplete = null) {
+            // Cancel request sebelumnya jika ada
+            if (activeRequests.status) {
+                activeRequests.status.abort();
+            }
+
+            activeRequests.status = $.ajax({
                 url: '/api/analytics/status',
                 type: 'GET',
                 data: {
@@ -359,15 +800,25 @@
                 },
                 success: function(response) {
                     console.log('Status response:', response);
-                    hideLoadingState('line-chart');
+                    activeRequests.status = null; // Clear reference
+
                     if (response.success) {
                         renderStatusChart(response.data);
+                    } else {
+                        hideLoadingState('line-chart');
                     }
+                    if (onComplete) onComplete();
                 },
                 error: function(xhr, status, error) {
-                    console.error('Error fetching status data:', error);
-                    console.error('Response:', xhr.responseText);
+                    activeRequests.status = null; // Clear reference
                     hideLoadingState('line-chart');
+
+                    // Jangan log error jika request dibatalkan
+                    if (status !== 'abort') {
+                        console.error('Error fetching status data:', error);
+                        console.error('Response:', xhr.responseText);
+                    }
+                    if (onComplete) onComplete();
                 }
             });
         }
@@ -379,7 +830,7 @@
         // Global chart variables
         let pieChart1, pieChart2, pieChart3, lineChart;
 
-        $(document).ready(function () {
+        $(document).ready(function() {
             // Initialize empty charts first
             initializeCharts();
         });
@@ -401,12 +852,12 @@
 
         function getEmptyPieOptions(title) {
             return {
-                series: [1], // Dummy data to avoid empty chart
+                series: [],
                 chart: {
                     width: '100%',
                     type: 'pie',
                 },
-                labels: ['Loading...'],
+                labels: [],
                 colors: ['#e5e7eb'],
                 title: {
                     text: title,
@@ -439,12 +890,12 @@
 
         function getEmptyDonutOptions(title) {
             return {
-                series: [1], // Dummy data to avoid empty chart
+                series: [], // Dummy data to avoid empty chart
                 chart: {
                     width: '100%',
                     type: 'donut',
                 },
-                labels: ['Loading...'],
+                labels: [],
                 colors: ['#e5e7eb'],
                 title: {
                     text: title,
@@ -530,15 +981,38 @@
 
         function renderPaymentMethodChart(data) {
             console.log('Rendering payment method chart:', data);
-            
-            // Destroy and recreate chart to ensure proper update
-            pieChart1.destroy();
-            
+
+            // Validation data
+            if (!data || !data.series || !data.labels) {
+                console.warn('Invalid payment method data:', data);
+                hideLoadingState('chart1');
+                return;
+            }
+
+            const currentLabels = pieChart1.w.config.labels;
+            const isLabelChanged = JSON.stringify(currentLabels) !== JSON.stringify(data.labels);
+
+            if (isLabelChanged) {
+                recreatePaymentChart(data); // safer
+            } else {
+                pieChart1.updateSeries(data.series);
+                hideLoadingState('chart1');
+            }
+        }
+
+        function recreatePaymentChart(data) {
+            if (pieChart1) pieChart1.destroy();
+
             const options = {
                 series: data.series,
                 chart: {
                     width: '100%',
                     type: 'pie',
+                    animations: {
+                        enabled: true,
+                        easing: 'easeinout',
+                        speed: 600
+                    }
                 },
                 labels: data.labels,
                 colors: ['#1a1a1a', '#2d3748', '#4a5568', '#718096', '#a0aec0'],
@@ -558,22 +1032,59 @@
                     }
                 }
             };
-            
+
             pieChart1 = new ApexCharts(document.querySelector("#pieChart1"), options);
             pieChart1.render();
         }
 
         function renderProgramChart(data) {
             console.log('Rendering program chart:', data);
-            
-            // Destroy and recreate chart to ensure proper update
-            pieChart2.destroy();
-            
+
+            // Hide loading state
+            hideLoadingState('chart2');
+
+            // Validasi minimal
+            if (!data || !Array.isArray(data.series) || !Array.isArray(data.labels)) {
+                console.warn('Invalid program chart data:', data);
+                return;
+            }
+
+            // Jika chart sudah dibuat
+            if (pieChart2) {
+                const currentLabels = pieChart2.w?.config?.labels ?? [];
+
+                const labelsChanged = JSON.stringify(currentLabels) !== JSON.stringify(data.labels);
+
+                if (labelsChanged) {
+                    console.log('🔁 Labels changed, recreating program chart...');
+                    recreateProgramChart(data);
+                } else {
+                    try {
+                        pieChart2.updateSeries(data.series, true); // update data
+                        // Bisa tambahkan update warna atau style ringan lainnya jika mau
+                    } catch (err) {
+                        console.warn('⚠️ Error updating series, recreating chart:', err);
+                        recreateProgramChart(data);
+                    }
+                }
+            } else {
+                recreateProgramChart(data);
+            }
+        }
+
+        function recreateProgramChart(data) {
+            if (pieChart2) pieChart2.destroy();
+
             const options = {
                 series: data.series,
                 chart: {
                     width: '100%',
                     type: 'donut',
+                    animations: {
+                        enabled: true,
+                        easing: 'easeinout',
+                        speed: 600
+                    }
                 },
                 labels: data.labels,
                 colors: ['#1a1a1a', '#2d3748', '#4a5568', '#718096', '#a0aec0'],
@@ -593,22 +1104,54 @@
                     }
                 }
             };
-            
+
             pieChart2 = new ApexCharts(document.querySelector("#pieChart2"), options);
             pieChart2.render();
         }
 
         function renderModelChart(data) {
             console.log('Rendering model chart:', data);
-            
-            // Destroy and recreate chart to ensure proper update
-            pieChart3.destroy();
-            
+
+            hideLoadingState('chart3');
+
+            if (!data || !Array.isArray(data.series) || !Array.isArray(data.labels)) {
+                console.warn('Invalid model chart data:', data);
+                return;
+            }
+
+            if (pieChart3) {
+                const currentLabels = pieChart3.w?.config?.labels ?? [];
+                const labelsChanged = JSON.stringify(currentLabels) !== JSON.stringify(data.labels);
+
+                if (labelsChanged) {
+                    console.log('🔁 Labels changed, recreating model chart...');
+                    recreateModelChart(data);
+                } else {
+                    try {
+                        pieChart3.updateSeries(data.series, true);
+                    } catch (error) {
+                        console.warn('⚠️ Failed to update series, recreating chart:', error);
+                        recreateModelChart(data);
+                    }
+                }
+            } else {
+                recreateModelChart(data);
+            }
+        }
+
+        function recreateModelChart(data) {
+            if (pieChart3) pieChart3.destroy();
+
             const options = {
                 series: data.series,
                 chart: {
                     width: '100%',
                     type: 'pie',
+                    animations: {
+                        enabled: true,
+                        easing: 'easeinout',
+                        speed: 600
+                    }
                 },
                 labels: data.labels,
                 colors: ['#1a1a1a', '#2d3748', '#4a5568', '#718096', '#a0aec0'],
@@ -628,17 +1171,44 @@
                     }
                 }
             };
-            
+
             pieChart3 = new ApexCharts(document.querySelector("#pieChart3"), options);
             pieChart3.render();
         }
 
         function renderStatusChart(data) {
             console.log('Rendering status chart:', data);
-            
-            // Destroy and recreate chart
-            lineChart.destroy();
-            
+
+            hideLoadingState('line-chart');
+
+            if (!data || !Array.isArray(data.series) || !Array.isArray(data.categories)) {
+                console.warn('Invalid status chart data:', data);
+                return;
+            }
+
+            if (lineChart) {
+                const currentCategories = lineChart.w?.config?.xaxis?.categories ?? [];
+                const categoriesChanged = JSON.stringify(currentCategories) !== JSON.stringify(data.categories);
+
+                if (categoriesChanged) {
+                    console.log('🔁 Categories changed, recreating status chart...');
+                    recreateStatusChart(data);
+                } else {
+                    try {
+                        lineChart.updateSeries(data.series, true);
+                    } catch (error) {
+                        console.warn('⚠️ Failed to update series, recreating chart:', error);
+                        recreateStatusChart(data);
+                    }
+                }
+            } else {
+                recreateStatusChart(data);
+            }
+        }
+
+        function recreateStatusChart(data) {
+            if (lineChart) lineChart.destroy();
+
             const options = {
                 series: data.series,
                 chart: {
@@ -646,6 +1216,11 @@
                     type: 'line',
                     zoom: {
                         enabled: false
+                    },
+                    animations: {
+                        enabled: true,
+                        easing: 'easeinout',
+                        speed: 600
                     }
                 },
                 colors: ['#1a1a1a', '#2d3748', '#4a5568', '#718096', '#a0aec0'],
@@ -692,18 +1267,18 @@
                     }
                 }
             };
-            
+
             lineChart = new ApexCharts(document.querySelector("#lineChart"), options);
             lineChart.render();
         }
 
         function updatePaymentMethodLabels(percentages) {
             console.log('Updating payment method labels:', percentages);
-            
+
             // Update the Cash and Credit percentage displays
             const cashElement = document.querySelector('#cash-label span');
             const creditElement = document.querySelector('#credit-label span');
-            
+
             if (cashElement) {
                 cashElement.textContent = `Cash ${percentages.Cash || 0}%`;
             }

@@ -24,16 +24,16 @@ class LeadAnalyticsController extends Controller
         try {
             $startDate = $request->input('start_date');
             $endDate = $request->input('end_date');
-            
+
             // Debug: Log received parameters
             Log::info('Payment Method Request Received', [
                 'start_date' => $startDate,
                 'end_date' => $endDate,
                 'all_params' => $request->all()
             ]);
-            
+
             $data = $this->sheetsService->getPaymentMethodStats($startDate, $endDate);
-            
+
             return response()->json([
                 'success' => true,
                 'data' => $data,
@@ -59,9 +59,9 @@ class LeadAnalyticsController extends Controller
         try {
             $startDate = $request->input('start_date');
             $endDate = $request->input('end_date');
-            
+
             $data = $this->sheetsService->getProgramStats($startDate, $endDate);
-            
+
             return response()->json([
                 'success' => true,
                 'data' => $data
@@ -82,9 +82,9 @@ class LeadAnalyticsController extends Controller
         try {
             $startDate = $request->input('start_date');
             $endDate = $request->input('end_date');
-            
+
             $data = $this->sheetsService->getModelStats($startDate, $endDate);
-            
+
             return response()->json([
                 'success' => true,
                 'data' => $data
@@ -105,9 +105,20 @@ class LeadAnalyticsController extends Controller
         try {
             $startDate = $request->input('start_date');
             $endDate = $request->input('end_date');
-            
+
             $data = $this->sheetsService->getStatusOverTimeStats($startDate, $endDate);
-            
+
+            // categories startDate and endDate in 23 juni 2024 format
+            //string
+            // if ($startDate) {
+            //     $startDate = date('d F Y', strtotime($startDate));
+            // }
+            // if ($endDate) {
+            //     $endDate = date('d F Y', strtotime($endDate));
+            // }
+
+            // $data['categories'] = [$startDate . " - " . $endDate];
+
             return response()->json([
                 'success' => true,
                 'data' => $data
