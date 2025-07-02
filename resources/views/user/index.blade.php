@@ -120,6 +120,13 @@
 
 <body class="font-sans">
 
+    <!-- Div Header -->
+    <div class="bg-[#9bd69e] py-4 px-10 mb-5 rounded-b-[2rem] flex items-center justify-between">
+        <div class="text-[#1a1a1a] text-5xl"><i class="ti ti-user-question"></i></div>
+        <div class="text-[2rem] font-bold text-[#1a1a1a]">Monitoring Leads</div>
+        <div class="text-[#1a1a1a] text-5xl"><i class="ti ti-heart-rate-monitor"></i></div>
+    </div>
+
     <!-- Div Layout -->
     <div class="flex gap-4 px-4 leading-6">
 
@@ -139,11 +146,11 @@
                 <div class="mt-4">
                     <div class="flex items-center gap-2 p-2 mb-2 bg-white rounded-lg" id="cash-label">
                         <i class="text-4xl ti ti-cash"></i>
-                        <span>Cash 50%</span>
+                        <span>Cash 0%</span>
                     </div>
                     <div class="flex items-center gap-2 p-2 mb-2 bg-white rounded-lg" id="credit-label">
                         <i class="text-4xl ti ti-wallet"></i>
-                        <span>Credit 50%</span>
+                        <span>Credit 0%</span>
                     </div>
                 </div>
             </div>
@@ -187,7 +194,7 @@
                     <!-- Loading overlay untuk line chart -->
                     <div id="line-chart-loading" class="hidden loading-overlay">
                         <div class="w-12 h-12 mb-3 border-b-2 border-green-600 rounded-full loading-spinner"></div>
-                        <span class="text-sm font-medium text-gray-600">Memuat Status Over Time...</span>
+                        <span class="text-sm font-medium text-gray-600">Memuat Status</span>
                     </div>
                 </div>
             </div>
@@ -197,14 +204,27 @@
         <div class="">
             <!-- <div class="flex-1"> -->
             <div class="rounded-lg bg-[#9bd69e] p-4 relative">
-                <div class="mb-2 text-2xl font-semibold text-center">Tanggal</div>
+                <div class="mb-2 text-2xl font-semibold text-center">Filter</div>
 
-                <input type="text" id="flatpickr-range"
-                    class="w-full px-4 py-2 mb-4 text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent"
-                    placeholder="Pilih rentang tanggal..." readonly />
+                <!-- Date Range Input -->
+                <div class="mb-4">
+                    <label class="block mb-1 text-sm font-medium text-gray-700">Tanggal</label>
+                    <input type="text" id="flatpickr-range"
+                        class="w-full px-4 py-2 text-gray-700 placeholder-gray-400 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent"
+                        placeholder="Pilih rentang tanggal..." readonly />
+                </div>
 
-                <!-- tempat kalender dirender -->
+                 <!-- tempat kalender dirender -->
                 <div id="flatpickr-range-container" class="flex justify-center w-full p-2 rounded-lg shadow"></div>
+
+                <!-- Sales Select -->
+                <div class="mt-2 mb-4">
+                    <label class="block mb-1 text-sm font-medium text-gray-700">Sales</label>
+                    <select id="sales-select"
+                        class="w-full px-4 py-2 text-gray-700 transition-all duration-300 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent">
+                        <option value="">Semua Sales</option>
+                    </select>
+                </div>
 
                 <!-- Cancel button - hanya tampil ketika sedang loading -->
                 <div id="cancel-loading-btn" class="hidden mt-4">
@@ -232,10 +252,7 @@
         // Global variables untuk debouncing dan request cancellation
         let debounceTimer = null;
         let activeRequests = {
-            payment: null,
-            program: null,
-            model: null,
-            status: null
+            unified: null // Hanya satu request sekarang
         };
         let isUpdatingCharts = false;
 
@@ -243,10 +260,10 @@
         let previousDateRange = null;
         let flatpickrInstance = null;
 
-        // Tambahan: Tracking untuk completion - ubah logika menjadi setelah 1 request berhasil
+        // Tambahan: Tracking untuk completion - sekarang hanya 1 request
         let completedRequestsCount = 0;
-        let totalRequestsExpected = 4; // Fix: tambahkan variabel yang hilang
-        let hasAnyRequestCompleted = false; // Flag untuk track apakah sudah ada request yang berhasil
+        let totalRequestsExpected = 1; // Hanya 1 request unified
+        let hasAnyRequestCompleted = false;
 
         // Set default date range to current month
         const today = new Date();
@@ -325,6 +342,18 @@
                     console.log('✅ Final Start Date:', startStr);
                     console.log('✅ Final End Date:', endStr);
 
+                    // Update input display
+                    document.getElementById('flatpickr-range').value = `${startStr} to ${endStr}`;
+
+                    // Show immediate visual feedback
+                    showDateChangeIndicator();
+
+                    // Update sales options terlebih dahulu, baru kemudian update charts
+                    // updateSalesOptions(startStr, endStr, () => {
+                    //     // Setelah sales options selesai, baru update charts
+                    //     debouncedUpdateCharts(startStr, endStr);
+                    // });
+
                     // Simpan tanggal sebelumnya sebelum update
                     const currentInput = document.getElementById('flatpickr-range').value;
                     if (currentInput && currentInput.includes(' to ')) {
@@ -344,6 +373,54 @@
             }
         });
 
+        function setupSalesSelectHandler() {
+            const salesSelect = document.getElementById('sales-select');
+            if (salesSelect) {
+                salesSelect.addEventListener('change', function() {
+                    // Cek apakah sudah ada request yang berhasil - jika ya, blokir perubahan sales
+                    if (hasAnyRequestCompleted) {
+                        console.log('⚠️ Sales change blocked - request already completed');
+                        return;
+                    }
+
+                    console.log('🔄 Sales filter changed:', this.value);
+
+                    // Get current date range
+                    const currentRange = document.getElementById('flatpickr-range').value;
+                    if (currentRange && currentRange.includes(' to ')) {
+                        const [startDate, endDate] = currentRange.split(' to ');
+                        debouncedUpdateCharts(startDate, endDate);
+                    }
+                });
+            }
+        }
+
+        function populateSalesSelect(salesData) {
+            const salesSelect = document.getElementById('sales-select');
+            if (!salesSelect) return;
+
+            // Simpan nilai yang sedang dipilih
+            const currentValue = salesSelect.value;
+
+            // Clear existing options except "Semua Sales"
+            salesSelect.innerHTML = '<option value="">Semua Sales</option>';
+
+            // Tambahkan sales options
+            salesData.forEach(sales => {
+                const option = document.createElement('option');
+                option.value = sales;
+                option.textContent = sales;
+                salesSelect.appendChild(option);
+            });
+
+            // Restore nilai yang dipilih jika masih ada
+            if (currentValue && salesData.includes(currentValue)) {
+                salesSelect.value = currentValue;
+            }
+
+            console.log('📋 Sales select populated with', salesData.length, 'options');
+        }
+
         // Fungsi untuk memberikan visual feedback saat user mengubah tanggal
         function showDateChangeIndicator() {
             const input = document.getElementById('flatpickr-range');
@@ -357,6 +434,93 @@
                     input.style.backgroundColor = '';
                 }, 1000);
             }
+        }
+
+        function updateAllChartsUnified(startDate = null, endDate = null) {
+            const selectedSales = document.getElementById('sales-select').value;
+
+            console.log('📤 SENDING Unified Analytics Request:', {
+                url: '/api/analytics/all',
+                start_date: startDate,
+                end_date: endDate,
+                sales: selectedSales
+            });
+
+            const requestData = {
+                start_date: startDate,
+                end_date: endDate
+            };
+
+            // Tambah parameter sales jika ada yang dipilih
+            if (selectedSales && selectedSales.trim() !== '') {
+                requestData.sales = selectedSales;
+            }
+
+            activeRequests.unified = $.ajax({
+                url: '/api/analytics/all',
+                type: 'GET',
+                data: requestData,
+                success: function(response) {
+                    console.log('✅ Unified analytics response:', response);
+                    activeRequests.unified = null;
+
+                    if (response.success && response.data) {
+                        const data = response.data;
+
+                        // Render semua charts dengan data yang diterima
+                        renderPaymentMethodChart(data.payment_methods);
+                        updatePaymentMethodLabels(data.payment_methods.percentages);
+
+                        renderProgramChart(data.programs);
+                        renderModelChart(data.models);
+                        renderStatusChart(data.status);
+
+                        // Update sales options jika tersedia
+                        if (data.available_sales && data.available_sales.length > 0) {
+                            console.log('📋 Updating sales from unified data');
+                            populateSalesSelect(data.available_sales);
+                        }
+
+                        // Mark completion
+                        completedRequestsCount = 1;
+                        hasAnyRequestCompleted = true;
+                        console.log('🔒 Unified request completed - locking controls');
+                        disableCancelButtonAndLockCalendar();
+
+                        // Cleanup setelah selesai
+                        setTimeout(() => {
+                            isUpdatingCharts = false;
+                            hideAllLoadingStates();
+                            unlockCalendarAfterCompletion();
+                        }, 1000);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    activeRequests.unified = null;
+                    hideAllLoadingStates();
+
+                    if (status !== 'abort') {
+                        console.error('❌ Error fetching unified analytics data:', error);
+                        console.error('Response:', xhr.responseText);
+                    }
+                },
+                complete: function() {
+                    // Hide cancel button
+                    setTimeout(() => {
+                        const cancelBtn = document.getElementById('cancel-loading-btn');
+                        if (cancelBtn) {
+                            cancelBtn.classList.add('hidden');
+                        }
+                    }, 1000);
+                }
+            });
+        }
+        
+        function hideAllLoadingStates() {
+            const loadingStates = ['chart1-loading', 'chart2-loading', 'chart3-loading', 'line-chart-loading'];
+            loadingStates.forEach(id => {
+                hideLoadingState(id.replace('-loading', ''));
+            });
         }
 
         // Fungsi debouncing untuk update charts
@@ -404,8 +568,8 @@
             document.getElementById('flatpickr-range').value = initialRange;
             previousDateRange = initialRange;
 
-            // Update charts without debouncing pada initial load
             updateAllCharts(startDate, endDate);
+            setupSalesSelectHandler();
         });
 
         function updateAllCharts(startDate = null, endDate = null) {
@@ -413,7 +577,7 @@
 
             // Set flag bahwa sedang update charts
             isUpdatingCharts = true;
-            
+
             // Reset completion tracking - reset semua flag untuk request baru
             completedRequestsCount = 0;
             hasAnyRequestCompleted = false; // Reset flag saat mulai request baru
@@ -428,44 +592,45 @@
             const checkCompleted = () => {
                 completedRequestsCount++;
                 console.log(`✅ Request completed: ${completedRequestsCount}/${totalRequestsExpected}`);
-                
+
                 // Disable cancel button dan lock calendar setelah request pertama berhasil
                 if (completedRequestsCount === 1 && !hasAnyRequestCompleted) {
                     hasAnyRequestCompleted = true;
                     console.log('🔒 First request completed - locking calendar and disabling cancel');
-                    
+
                     // Disable cancel button dan lock calendar
                     disableCancelButtonAndLockCalendar();
                 }
-                
+
                 // Check jika semua selesai untuk cleanup
                 if (completedRequestsCount >= totalRequestsExpected) {
                     isUpdatingCharts = false;
                     console.log('✅ All charts updated successfully');
-                    
+
                     // Hide cancel button setelah semua selesai
                     setTimeout(() => {
                         const cancelBtn = document.getElementById('cancel-loading-btn');
                         if (cancelBtn) {
                             cancelBtn.classList.add('hidden');
                             const buttonText = cancelBtn.querySelector('i').nextSibling;
-                    if (buttonText) {
-                        buttonText.textContent = ' Batalkan';
-                    }
+                            if (buttonText) {
+                                buttonText.textContent = ' Batalkan';
+                            }
                         }
-                        
+
                         unlockCalendarAfterCompletion();
                     }, 1000);
                 }
             };
 
             // Update semua charts dengan tracking completion
-            updatePaymentMethodChart(startDate, endDate, checkCompleted);
-            updateProgramChart(startDate, endDate, checkCompleted);
-            updateModelChart(startDate, endDate, checkCompleted);
-            updateStatusChart(startDate, endDate, checkCompleted);
+            // updatePaymentMethodChart(startDate, endDate, checkCompleted);
+            // updateProgramChart(startDate, endDate, checkCompleted);
+            // updateModelChart(startDate, endDate, checkCompleted);
+            // updateStatusChart(startDate, endDate, checkCompleted);
+            updateAllChartsUnified(startDate, endDate);
         }
-        
+
         // Fungsi untuk unlock calendar setelah semua request selesai
         function unlockCalendarAfterCompletion() {
             // Unlock calendar
@@ -475,7 +640,7 @@
                 calendarContainer.style.opacity = '';
                 calendarContainer.style.filter = '';
             }
-            
+
             // Unlock input field
             const inputField = document.getElementById('flatpickr-range');
             if (inputField) {
@@ -483,10 +648,18 @@
                 inputField.style.cursor = '';
                 inputField.disabled = false;
             }
-            
+
+            const salesSelect = document.getElementById('sales-select');
+            if (salesSelect) {
+                salesSelect.disabled = false;
+                salesSelect.style.backgroundColor = '';
+                salesSelect.style.cursor = '';
+                salesSelect.style.opacity = '';
+            }
+
             // Reset flag untuk memungkinkan request baru
             hasAnyRequestCompleted = false;
-            
+
             console.log('🔓 Calendar unlocked - ready for new date selection');
         }
 
@@ -541,11 +714,12 @@
             }
 
             // Fix: hapus log yang menggunakan variabel undefined
-            console.log(`📊 Chart ${chartId} completed. Total completed: ${completedRequestsCount}/${totalRequestsExpected}`);
+            console.log(
+                `📊 Chart ${chartId} completed. Total completed: ${completedRequestsCount}/${totalRequestsExpected}`);
         }
 
         // Hapus fungsi disableCancelButton() yang tidak terpakai dan replace dengan yang benar
-        
+
         // Fungsi baru untuk disable cancel button dan lock calendar setelah 1 request berhasil
         function disableCancelButtonAndLockCalendar() {
             // Disable cancel button
@@ -555,7 +729,7 @@
                 if (button) {
                     button.disabled = true;
                     button.classList.add('opacity-50', 'cursor-not-allowed');
-                    
+
                     // Update text button
                     const buttonText = button.querySelector('i').nextSibling;
                     if (buttonText) {
@@ -563,7 +737,16 @@
                     }
                 }
             }
-            
+
+            // Lock sales select
+            const salesSelect = document.getElementById('sales-select');
+            if (salesSelect) {
+                salesSelect.disabled = true;
+                salesSelect.style.backgroundColor = '#f3f4f6';
+                salesSelect.style.cursor = 'not-allowed';
+                salesSelect.style.opacity = '0.5';
+            }
+
             // Lock calendar - disable interaction dengan visual feedback
             const calendarContainer = document.getElementById('flatpickr-range-container');
             if (calendarContainer) {
@@ -571,7 +754,7 @@
                 calendarContainer.style.opacity = '0.5';
                 calendarContainer.style.filter = 'grayscale(1)';
             }
-            
+
             // Lock input field
             const inputField = document.getElementById('flatpickr-range');
             if (inputField) {
@@ -579,7 +762,7 @@
                 inputField.style.cursor = 'not-allowed';
                 inputField.disabled = true;
             }
-            
+
             console.log('🔒 Calendar and cancel button locked');
         }
 
@@ -592,7 +775,7 @@
                 calendarContainer.style.opacity = '';
                 calendarContainer.style.filter = '';
             }
-            
+
             // Unlock input field
             const inputField = document.getElementById('flatpickr-range');
             if (inputField) {
@@ -600,11 +783,19 @@
                 inputField.style.cursor = '';
                 inputField.disabled = false;
             }
-            
+
+            const salesSelect = document.getElementById('sales-select');
+            if (salesSelect) {
+                salesSelect.disabled = false;
+                salesSelect.style.backgroundColor = '';
+                salesSelect.style.cursor = '';
+                salesSelect.style.opacity = '1';
+            }
+
             // Reset flags
             hasAnyRequestCompleted = false;
             completedRequestsCount = 0;
-            
+
             console.log('🔓 Calendar and cancel button unlocked');
         }
 
@@ -628,17 +819,17 @@
 
             // Kembalikan ke tanggal sebelumnya jika ada
             if (previousDateRange) {
-    const [prevStart, prevEnd] = previousDateRange.split(' to ');
-    if (prevStart && prevEnd && flatpickrInstance) {
-        // Kembalikan kalender dan input ke range sebelumnya tanpa trigger onChange
-        flatpickrInstance.setDate([prevStart, prevEnd], false);
-        document.getElementById('flatpickr-range').value = previousDateRange;
+                const [prevStart, prevEnd] = previousDateRange.split(' to ');
+                if (prevStart && prevEnd && flatpickrInstance) {
+                    // Kembalikan kalender dan input ke range sebelumnya tanpa trigger onChange
+                    flatpickrInstance.setDate([prevStart, prevEnd], false);
+                    document.getElementById('flatpickr-range').value = previousDateRange;
 
-        console.log('↩️ Restored previous date range:', previousDateRange);
-    } else {
-        console.warn('⚠️ Gagal mengembalikan tanggal sebelumnya - format tidak valid');
-    }
-}
+                    console.log('↩️ Restored previous date range:', previousDateRange);
+                } else {
+                    console.warn('⚠️ Gagal mengembalikan tanggal sebelumnya - format tidak valid');
+                }
+            }
 
 
             // Hide semua loading states
@@ -664,10 +855,12 @@
         }
 
         function updatePaymentMethodChart(startDate = null, endDate = null, onComplete = null) {
+            const selectedSales = document.getElementById('sales-select').value;
             console.log('📤 SENDING Payment Method Request:', {
                 url: '/api/analytics/payment-method',
                 start_date: startDate,
-                end_date: endDate
+                end_date: endDate,
+                sales: selectedSales
             });
 
             // Cancel request sebelumnya jika ada
@@ -675,13 +868,20 @@
                 activeRequests.payment.abort();
             }
 
+            const requestData = {
+                start_date: startDate,
+                end_date: endDate
+            };
+
+            // Tambah parameter sales jika ada yang dipilih
+            if (selectedSales && selectedSales.trim() !== '') {
+                requestData.sales = selectedSales;
+            }
+
             activeRequests.payment = $.ajax({
                 url: '/api/analytics/payment-method',
                 type: 'GET',
-                data: {
-                    start_date: startDate,
-                    end_date: endDate
-                },
+                data: requestData,
                 success: function(response) {
                     console.log('✅ Payment method response:', response);
                     activeRequests.payment = null; // Clear reference
@@ -715,13 +915,21 @@
                 activeRequests.program.abort();
             }
 
+            const selectedSales = document.getElementById('sales-select').value;
+            const requestData = {
+                start_date: startDate,
+                end_date: endDate
+            };
+
+            // Tambah parameter sales jika ada yang dipilih
+            if (selectedSales && selectedSales.trim() !== '') {
+                requestData.sales = selectedSales;
+            }
+
             activeRequests.program = $.ajax({
                 url: '/api/analytics/program',
                 type: 'GET',
-                data: {
-                    start_date: startDate,
-                    end_date: endDate
-                },
+                data: requestData,
                 success: function(response) {
                     console.log('Program response:', response);
                     activeRequests.program = null; // Clear reference
@@ -753,13 +961,21 @@
                 activeRequests.model.abort();
             }
 
+            const selectedSales = document.getElementById('sales-select').value;
+            const requestData = {
+                start_date: startDate,
+                end_date: endDate
+            };
+
+            // Tambah parameter sales jika ada yang dipilih
+            if (selectedSales && selectedSales.trim() !== '') {
+                requestData.sales = selectedSales;
+            }
+
             activeRequests.model = $.ajax({
                 url: '/api/analytics/model',
                 type: 'GET',
-                data: {
-                    start_date: startDate,
-                    end_date: endDate
-                },
+                data: requestData,
                 success: function(response) {
                     console.log('Model response:', response);
                     activeRequests.model = null; // Clear reference
@@ -791,19 +1007,32 @@
                 activeRequests.status.abort();
             }
 
+            const selectedSales = document.getElementById('sales-select').value;
+            const requestData = {
+                start_date: startDate,
+                end_date: endDate
+            };
+
+            // Tambah parameter sales jika ada yang dipilih
+            if (selectedSales && selectedSales.trim() !== '') {
+                requestData.sales = selectedSales;
+            }
+
+
             activeRequests.status = $.ajax({
                 url: '/api/analytics/status',
                 type: 'GET',
-                data: {
-                    start_date: startDate,
-                    end_date: endDate
-                },
+                data: requestData,
                 success: function(response) {
                     console.log('Status response:', response);
                     activeRequests.status = null; // Clear reference
 
                     if (response.success) {
                         renderStatusChart(response.data);
+                        if (response.data.available_sales && (!selectedSales || selectedSales.trim() === '')) {
+                            console.log('📋 Updating sales from status chart data');
+                            populateSalesSelect(response.data.available_sales);
+                        }
                     } else {
                         hideLoadingState('line-chart');
                     }
@@ -1079,7 +1308,7 @@
                 series: data.series,
                 chart: {
                     width: '100%',
-                    type: 'donut',
+                    type: 'pie',
                     animations: {
                         enabled: true,
                         easing: 'easeinout',
@@ -1213,26 +1442,26 @@
                 series: data.series,
                 chart: {
                     height: 350,
-                    type: 'line',
-                    zoom: {
-                        enabled: false
-                    },
+                    type: 'bar',
                     animations: {
                         enabled: true,
                         easing: 'easeinout',
                         speed: 600
                     }
                 },
-                colors: ['#1a1a1a', '#2d3748', '#4a5568', '#718096', '#a0aec0'],
-                dataLabels: {
-                    enabled: false
+                plotOptions: {
+                    bar: {
+                        horizontal: false,
+                        columnWidth: '50%',
+                        endingShape: 'rounded'
+                    }
                 },
-                stroke: {
-                    curve: 'smooth',
-                    width: 3
+                colors: ['#34d399'], // Warna hijau modern
+                dataLabels: {
+                    enabled: true
                 },
                 title: {
-                    text: 'Status Over Time',
+                    text: 'Ringkasan Status',
                     align: 'center',
                     style: {
                         fontSize: '16px',
@@ -1247,6 +1476,13 @@
                 },
                 xaxis: {
                     categories: data.categories,
+                    title: {
+                        text: 'Status',
+                        style: {
+                            color: '#1a1a1a',
+                            fontWeight: 600
+                        }
+                    },
                     labels: {
                         style: {
                             colors: '#1a1a1a'
@@ -1254,6 +1490,13 @@
                     }
                 },
                 yaxis: {
+                    title: {
+                        text: 'Jumlah',
+                        style: {
+                            color: '#1a1a1a',
+                            fontWeight: 600
+                        }
+                    },
                     labels: {
                         style: {
                             colors: '#1a1a1a'
@@ -1261,10 +1504,7 @@
                     }
                 },
                 legend: {
-                    position: 'bottom',
-                    labels: {
-                        colors: '#1a1a1a'
-                    }
+                    show: false
                 }
             };
 

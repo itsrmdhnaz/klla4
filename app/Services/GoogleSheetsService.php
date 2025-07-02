@@ -9,20 +9,30 @@ use Carbon\Carbon;
 class GoogleSheetsService
 {
     private string $scriptUrl;
+    private string $salesScriptUrl;
 
     public function __construct()
     {
         $this->scriptUrl = config('services.google_sheets.script_url');
+        // Asumsikan sama dengan script_url tapi dengan parameter berbeda
+        $this->salesScriptUrl = config('services.google_sheets.script_url');
     }
 
-    private function getDataFromScript(?string $startDate, ?string $endDate, string $range): array
+    private function getDataFromScript(?string $startDate, ?string $endDate, string $range, ?string $sales = null): array
     {
         try {
-            $response = Http::timeout(20)->get($this->scriptUrl, [
+            $params = [
                 'startDate' => $startDate,
                 'endDate' => $endDate,
                 'range' => $range,
-            ]);
+            ];
+
+            // Tambah parameter sales jika ada
+            if ($sales && $sales !== '') {
+                $params['sales'] = $sales;
+            }
+
+            $response = Http::timeout(20)->get($this->scriptUrl, $params);
 
             if ($response->failed()) {
                 Log::error('Failed fetching from Google Apps Script', [
@@ -45,29 +55,51 @@ class GoogleSheetsService
     }
 
 
-    public function getPaymentMethodStats(?string $startDate = null, ?string $endDate = null): array
+    // METODE BARU: Satu request untuk semua data
+    public function getAllAnalyticsData(?string $startDate = null, ?string $endDate = null, ?string $sales = null): array
     {
-        $data = $this->getDataFromScript($startDate, $endDate, 'A2:F');
-        return $this->calculatePaymentMethodStats($data, 5);
+        // Ambil semua data A2:P dalam satu request
+        $data = $this->getDataFromScript($startDate, $endDate, 'A2:P', $sales);
+
+        // Preprocessing semua statistik sekaligus
+        return [
+            'payment_methods' => $this->calculatePaymentMethodStats($data, 5),
+            'programs' => $this->calculateStats($data, 6),
+            'models' => $this->calculateStats($data, 4),
+            'status' => $this->calculateStatusSummary($data, 8),
+            'available_sales' => $this->extractSalesFromData($data, $sales)
+        ];
     }
 
-    public function getProgramStats(?string $startDate = null, ?string $endDate = null): array
+    // Helper method untuk extract sales dari data yang sudah ada
+    private function extractSalesFromData(array $data, ?string $currentSales = null): array
     {
-        $data = $this->getDataFromScript($startDate, $endDate, 'A2:G');
-        return $this->calculateStats($data, 6);
+        // Hanya extract sales jika tidak ada filter sales
+        if ($currentSales && $currentSales !== '') {
+            return [];
+        }
+
+        $salesSet = [];
+        foreach ($data as $row) {
+            // Column P = index 15
+            if (isset($row[15]) && !empty(trim($row[15]))) {
+                $salesName = trim($row[15]);
+                if (!in_array($salesName, $salesSet)) {
+                    $salesSet[] = $salesName;
+                }
+            }
+        }
+
+        sort($salesSet);
+        return $salesSet;
     }
 
-    public function getModelStats(?string $startDate = null, ?string $endDate = null): array
-    {
-        $data = $this->getDataFromScript($startDate, $endDate, 'A2:E');
-        return $this->calculateStats($data, 4);
-    }
-
-    public function getStatusOverTimeStats(?string $startDate = null, ?string $endDate = null): array
-    {
-        $data = $this->getDataFromScript($startDate, $endDate, 'A2:I');
-        return $this->calculateStatusOverTime($data, 8, 0, $startDate, $endDate);
-    }
+    // HAPUS atau DEPRECATE method-method lama ini (keep untuk backward compatibility jika diperlukan)
+    // public function getPaymentMethodStats() - DEPRECATED
+    // public function getProgramStats() - DEPRECATED
+    // public function getModelStats() - DEPRECATED
+    // public function getStatusOverTimeStats() - DEPRECATED
+    // public function extractSalesFromStatusData() - DEPRECATED
 
     // --- Statistik processing di bawah ini sama seperti sebelumnya ---
 
@@ -199,4 +231,36 @@ class GoogleSheetsService
             'categories' => $categories,
         ];
     }
-}
+
+    private function calculateStatusSummary(array $data, int $statusColumnIndex): array
+    {
+        $statusCounts = [];
+
+        foreach ($data as $row) {
+            if (!isset($row[$statusColumnIndex])) continue;
+
+            $status = trim($row[$statusColumnIndex]);
+            if ($status === '') continue;
+
+            $statusCounts[$status] = ($statusCounts[$status] ?? 0) + 1;
+        }
+
+        // ⛔ Jika tidak ada status, beri default "No Status" => 0
+        if (empty($statusCounts)) {
+            $statusCounts = ['No Status' => 0];
+        }
+
+        // Bangun struktur series bar chart
+        $series = [[
+            'name' => 'Jumlah',
+            'data' => array_values($statusCounts),
+        ]];
+
+        $categories = array_keys($statusCounts); // Nama status sebagai kategori (label X)
+
+        return [
+            'series' => $series,
+            'categories' => $categories,
+        ];
+    }
+};

@@ -55,10 +55,15 @@ require __DIR__ . '/auth.php';
 
 // API Routes untuk Analytics
 Route::prefix('api/analytics')->group(function () {
+    // NEW: Unified endpoint untuk semua analytics data
+    Route::get('/all', [LeadAnalyticsController::class, 'getAllAnalyticsData']);
+
+    // OLD: Keep untuk backward compatibility
     Route::get('/payment-method', [LeadAnalyticsController::class, 'getPaymentMethodData']);
     Route::get('/program', [LeadAnalyticsController::class, 'getProgramData']);
     Route::get('/model', [LeadAnalyticsController::class, 'getModelData']);
     Route::get('/status', [LeadAnalyticsController::class, 'getStatusData']);
+    Route::get('/sales', [LeadAnalyticsController::class, 'getSalesData']);
 });
 
 // Debug Routes
