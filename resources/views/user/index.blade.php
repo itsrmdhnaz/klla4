@@ -1830,6 +1830,15 @@
 
         function recreateStatusChart(data) {
             if (lineChart) lineChart.destroy();
+            
+             const colors = [
+                '#218DA7', // 🟦 Biru kehijauan
+                '#A71616', // 🔴 Merah gelap
+                '#B36C1B', // 🟤 Coklat emas
+                '#B5218B', // 🌸 Magenta fuchsia
+                '#5D3A9B', // 🟣 Ungu gelap
+                '#7C4F20'  // 🟤 Coklat tanah
+            ];
 
             const options = {
                 series: data.series,
@@ -1850,7 +1859,7 @@
                         distributed: true // ✅ ini kuncinya!
                     }
                 },
-                colors: ['#34d399', '#3b82f6', '#f59e0b'], // ✅ warna per bar (bukan per series)
+                colors: colors,
                 dataLabels: {
                     enabled: true
                 },
